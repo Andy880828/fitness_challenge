@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12週減脂增肌挑戰賽</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #d4ff3a;
+    --accent-2: #ff5e3a;
+    --photo: #ff8ec0;
+    --text: #f5f5f5;
+    --text-dim: #888;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(212,255,58,0.06), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(255,94,58,0.05), transparent 40%);
+    background-attachment: fixed;
+  }
+  .display-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.02em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; }
+  .card-2 { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; }
+  .btn-primary { background: var(--accent); color: #0a0a0a; font-weight: 700; transition: all 0.15s; }
+  .btn-primary:hover { background: #b8e02a; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); transition: all 0.15s; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .input, .select {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 0.6rem 0.8rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace;
+    width: 100%; transition: border-color 0.15s;
+  }
+  .input:focus, .select:focus { outline: none; border-color: var(--accent); }
+  .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.4rem; font-weight: 700; }
+  .tab-active { color: var(--accent); border-bottom-color: var(--accent); }
+  .rank-1 { color: var(--accent); }
+  .rank-2 { color: #fff; }
+  .rank-3 { color: var(--accent-2); }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; line-height: 1; }
+  .pulse-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar::-webkit-scrollbar-track { background: var(--surface); }
+  .scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .progress-bar { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.4s; }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-radius: 2px; }
+  .badge-m { background: rgba(58,170,255,0.15); color: #6ab8ff; }
+  .badge-f { background: rgba(255,94,170,0.15); color: #ff8ec0; }
+  .divider { height: 1px; background: var(--border); }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+
+  .checkin-tile {
+    border: 2px solid var(--border); border-radius: 8px; background: var(--surface-2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.4rem; cursor: pointer; transition: all 0.2s; user-select: none;
+    padding: 1.5rem 0.5rem;
+  }
+  .checkin-tile:hover { border-color: var(--text-dim); }
+  .checkin-tile.active { border-color: var(--accent); background: rgba(212,255,58,0.08); }
+  .checkin-tile.active .check-icon { background: var(--accent); color: #0a0a0a; }
+  .checkin-tile.active.photo { border-color: var(--photo); background: rgba(255,142,192,0.08); }
+  .checkin-tile.active.photo .check-icon { background: var(--photo); color: #0a0a0a; }
+  .checkin-tile.disabled { opacity: 0.4; cursor: not-allowed; }
+  .check-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; transition: all 0.2s;
+  }
+
+  .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .weekday-header {
+    text-align: center; font-size: 0.7rem; padding: 0.4rem 0;
+    color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
+  }
+  .weekday-header.sun { color: var(--accent-2); }
+  .month-cell {
+    aspect-ratio: 1; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 3px; padding: 0.3rem; display: flex; flex-direction: column;
+    cursor: pointer; transition: all 0.15s; position: relative; min-height: 56px;
+  }
+  .month-cell:hover:not(.disabled) { border-color: var(--text-dim); }
+  .month-cell.today { border-color: var(--accent); border-width: 2px; }
+  .month-cell.disabled { opacity: 0.25; cursor: not-allowed; }
+  .month-cell.outside { background: transparent; border-color: transparent; opacity: 0.2; cursor: not-allowed; }
+  .month-cell.measure-day { background: rgba(255,94,58,0.1); border-color: var(--accent-2); }
+  .month-cell.test-future { opacity: 0.7; border-style: dashed; }
+  .day-num { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 700; }
+  .day-meta { font-size: 0.55rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+  .day-meta.measure { color: var(--accent-2); font-weight: 700; }
+  .day-dots { display: flex; gap: 3px; margin-top: auto; }
+  .day-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .day-dot.workout { background: #6ab8ff; }
+  .day-dot.diet { background: var(--accent); }
+  .day-dot.photo { background: var(--photo); }
+  .month-nav-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text);
+    padding: 0.4rem 0.8rem; border-radius: 3px; cursor: pointer; transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  }
+  .month-nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .month-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Test mode banner */
+  .test-banner {
+    background: linear-gradient(90deg, rgba(255,94,58,0.15), rgba(255,142,192,0.15));
+    border-bottom: 1px solid var(--accent-2);
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+  /* Toggle switch */
+  .toggle {
+    width: 44px; height: 24px; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 12px; position: relative; cursor: pointer; transition: all 0.2s;
+    display: inline-block; vertical-align: middle;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; background: var(--text-dim); border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .toggle.on { background: rgba(212,255,58,0.15); border-color: var(--accent); }
+  .toggle.on::after { left: 22px; background: var(--accent); }
+
+  /* Photo gallery */
+  .photo-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  .photo-thumb {
+    aspect-ratio: 1; border-radius: 4px; overflow: hidden;
+    background: var(--surface-2); border: 1px solid var(--border);
+    cursor: pointer; position: relative; transition: all 0.15s;
+  }
+  .photo-thumb:hover { border-color: var(--photo); transform: scale(1.02); }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb-delete {
+    position: absolute; top: 4px; right: 4px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(0,0,0,0.7); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; opacity: 0;
+    transition: opacity 0.15s; border: none;
+  }
+  .photo-thumb:hover .photo-thumb-delete { opacity: 1; }
+  .photo-upload-tile {
+    aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; gap: 0.4rem;
+  }
+  .photo-upload-tile:hover { border-color: var(--photo); color: var(--photo); }
+  .photo-upload-tile.disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem; cursor: pointer;
+  }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 4px; }
+  .lightbox-close {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); color: #fff;
+    border: none; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox-info {
+    position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); color: #fff; padding: 0.5rem 1rem;
+    border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  }
+
+  /* Profile clickable name */
+  .clickable-row { cursor: pointer; }
+  .clickable-row:hover { background: var(--surface-2); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useMemo, useRef } = React;
+
+const STORE_KEY = 'fitness_challenge_v5';
+const DEFAULT_START_DATE = '2026-05-07';
+
+const loadStore = () => {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return { participants: [], checkins: {}, measures: {}, photos: {}, currentUser: null, startDate: DEFAULT_START_DATE, testMode: false };
+    const s = JSON.parse(raw);
+    if (!s.startDate) s.startDate = DEFAULT_START_DATE;
+    if (s.testMode == null) s.testMode = false;
+    if (!s.photos) s.photos = {};
+    return s;
+  } catch (e) {
+    return { participants: [], checkins: {}, measures: {}, photos: {}, currentUser: null, startDate: DEFAULT_START_DATE, testMode: false };
+  }
+};
+const saveStore = (s) => {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(s));
+    return true;
+  } catch (e) {
+    alert('儲存失敗：localStorage 已滿。請到「規則 → 資料管理」匯出 JSON 備份，或刪除一些較舊的照片。');
+    return false;
+  }
+};
+
+const TOTAL_DAYS = 84;
+const SAFETY_FLOOR = { M: 10, F: 16 };
+const MEASURE_WEEKS = [0, 4, 8, 12];
+const MEASURE_LABELS = ['初始', '第4週', '第8週', '結算'];
+const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
+const FAT_CAP = 15;
+const MUSCLE_CAP = 8;
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const addDays = (dateStr, n) => {
+  const d = new Date(dateStr); d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+const dayDiff = (a, b) => Math.floor((new Date(b) - new Date(a)) / 86400000);
+const measureDates = (sd) => sd ? MEASURE_WEEKS.map(w => addDays(sd, w * 7)) : [];
+
+const formatDateZh = (dateStr) => {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+};
+
+const effectiveDaysSinceStart = (store) => {
+  if (!store.startDate) return 1;
+  if (store.testMode) return TOTAL_DAYS;
+  return Math.max(1, Math.min(TOTAL_DAYS, dayDiff(store.startDate, todayStr()) + 1));
+};
+
+// Compress image to base64 string
+const compressImage = (file, maxWidth = 800, quality = 0.8) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+const computeScore = (p, store) => {
+  const userMeasures = store.measures[p.id] || {};
+  const userCheckins = store.checkins[p.id] || {};
+  const userPhotos = store.photos[p.id] || {};
+
+  const keys = Object.keys(userMeasures).map(Number).sort((a,b) => b-a);
+  const latestKey = keys.find(k => userMeasures[k]?.fat != null);
+  const latest = latestKey != null ? userMeasures[latestKey] : null;
+  const start = userMeasures[0];
+
+  let fatChange = 0, muscleChange = 0;
+  if (start && latest && start.fat) {
+    const floor = SAFETY_FLOOR[p.gender];
+    const effEnd = Math.max(latest.fat, floor);
+    fatChange = ((start.fat - effEnd) / start.fat) * 100;
+  }
+  if (start && latest && start.muscle && latest.muscle) {
+    muscleChange = ((latest.muscle - start.muscle) / start.muscle) * 100;
+  }
+
+  const workoutDays = Object.values(userCheckins).filter(c => c.workout).length;
+  const dietDays = Object.values(userCheckins).filter(c => c.diet).length;
+  // Photo day = any day with at least one photo
+  const photoDays = Object.keys(userPhotos).filter(d => (userPhotos[d] || []).length > 0).length;
+  const totalPhotos = Object.values(userPhotos).reduce((s, arr) => s + arr.length, 0);
+
+  const totalCheckins = workoutDays + dietDays + photoDays;
+  const expectedDays = effectiveDaysSinceStart(store);
+  const expectedCheckins = expectedDays * 3;
+  const processScore = expectedCheckins > 0 ? Math.min(100, (totalCheckins / expectedCheckins) * 100) : 0;
+
+  const fatNorm = Math.min(100, (Math.max(0, fatChange) / FAT_CAP) * 100);
+  const muscleNorm = Math.min(100, (Math.max(0, muscleChange) / MUSCLE_CAP) * 100);
+  const total = fatNorm * 0.4 + muscleNorm * 0.4 + processScore * 0.2;
+
+  return {
+    fatScore: fatNorm, muscleScore: muscleNorm, processScore, total,
+    fatChange, muscleChange, workoutDays, dietDays, photoDays, totalPhotos,
+    measuresCount: keys.filter(k => userMeasures[k]?.fat != null).length,
+    latest, start
+  };
+};
+
+// ============ Lightbox ============
+const Lightbox = ({ photo, onClose }) => {
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, []);
+  return (
+    <div className="lightbox" onClick={onClose}>
+      <button className="lightbox-close" onClick={onClose}>✕</button>
+      <img src={photo.dataUrl} alt={photo.uploadedAt} onClick={e => e.stopPropagation()}/>
+      <div className="lightbox-info">{photo.uploadedAt}</div>
+    </div>
+  );
+};
+
+// ============ Photo Grid ============
+const PhotoGrid = ({ photos, onAdd, onDelete, onView, canEdit, readOnly }) => {
+  const inputRef = useRef(null);
+
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    for (const f of files) {
+      try {
+        const dataUrl = await compressImage(f);
+        onAdd({ dataUrl, uploadedAt: new Date().toLocaleString('zh-TW', { hour12: false }) });
+      } catch (err) {
+        console.error('Compress failed:', err);
+      }
+    }
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  return (
+    <div>
+      <div className="photo-grid">
+        {photos.map((p, i) => (
+          <div key={i} className="photo-thumb" onClick={() => onView(p)}>
+            <img src={p.dataUrl} alt=""/>
+            {canEdit && !readOnly && (
+              <button className="photo-thumb-delete" onClick={(e) => { e.stopPropagation(); onDelete(i); }} title="刪除">✕</button>
+            )}
+          </div>
+        ))}
+        {canEdit && !readOnly && (
+          <label className="photo-upload-tile">
+            <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{display: 'none'}}/>
+            <div style={{fontSize: 28, lineHeight: 1}}>+</div>
+            <div className="text-xs mono">上傳照片</div>
+          </label>
+        )}
+      </div>
+      {photos.length === 0 && readOnly && (
+        <div className="text-center text-sm text-[var(--text-dim)] py-6 mono">這天沒有照片</div>
+      )}
+    </div>
+  );
+};
+
+// ============ Calendar ============
+const MonthCalendar = ({ store, userCheckins, userPhotos, onDayClick, selectedDate }) => {
+  const startDate = store.startDate;
+  const today = todayStr();
+  const measureDateList = measureDates(startDate);
+  const endDate = addDays(startDate, TOTAL_DAYS - 1);
+  const testMode = store.testMode;
+
+  const [viewMonth, setViewMonth] = useState(() => {
+    const t = new Date(today);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const cur = t < start ? start : t > end ? end : t;
+    return { year: cur.getFullYear(), month: cur.getMonth() };
+  });
+
+  const monthStart = new Date(viewMonth.year, viewMonth.month, 1);
+  const monthEnd = new Date(viewMonth.year, viewMonth.month + 1, 0);
+  const firstDayOfWeek = monthStart.getDay();
+  const daysInMonth = monthEnd.getDate();
+
+  const cells = [];
+  for (let i = 0; i < firstDayOfWeek; i++) cells.push({ outside: true, key: `pre-${i}` });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${viewMonth.year}-${String(viewMonth.month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isBeforeStart = dateStr < startDate;
+    const isAfterEnd = dateStr > endDate;
+    const isFuture = dateStr > today;
+    const isToday = dateStr === today;
+    const isMeasure = measureDateList.includes(dateStr);
+    const measureIdx = measureDateList.indexOf(dateStr);
+    const dayNum = isBeforeStart || isAfterEnd ? null : dayDiff(startDate, dateStr) + 1;
+    const c = userCheckins[dateStr] || {};
+    const hasPhoto = ((userPhotos || {})[dateStr] || []).length > 0;
+    cells.push({
+      key: dateStr, date: dateStr, day: d,
+      isBeforeStart, isAfterEnd, isFuture, isToday, isMeasure, measureIdx, dayNum,
+      workout: !!c.workout, diet: !!c.diet, photo: hasPhoto
+    });
+  }
+
+  const canGoPrev = monthStart > new Date(startDate);
+  const canGoNext = monthEnd < new Date(endDate);
+
+  const goPrev = () => setViewMonth(v => v.month === 0 ? { year: v.year - 1, month: 11 } : { year: v.year, month: v.month - 1 });
+  const goNext = () => setViewMonth(v => v.month === 11 ? { year: v.year + 1, month: 0 } : { year: v.year, month: v.month + 1 });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <button className="month-nav-btn" onClick={goPrev} disabled={!canGoPrev}>← 上個月</button>
+        <div className="display-font text-3xl tracking-wider">
+          {viewMonth.year} / {String(viewMonth.month + 1).padStart(2, '0')}
+        </div>
+        <button className="month-nav-btn" onClick={goNext} disabled={!canGoNext}>下個月 →</button>
+      </div>
+      <div className="month-grid mb-2">
+        {WEEKDAY_LABELS.map((wd, i) => (<div key={wd} className={`weekday-header ${i === 0 ? 'sun' : ''}`}>{wd}</div>))}
+      </div>
+      <div className="month-grid">
+        {cells.map(cell => {
+          if (cell.outside) return <div key={cell.key} className="month-cell outside"></div>;
+          const isOutsideRange = cell.isBeforeStart || cell.isAfterEnd;
+          const isFutureClickable = testMode && cell.isFuture && !isOutsideRange;
+          const disabled = isOutsideRange || (cell.isFuture && !testMode);
+          const className = ['month-cell', cell.isToday ? 'today' : '', disabled ? 'disabled' : '',
+            cell.isMeasure ? 'measure-day' : '', isFutureClickable ? 'test-future' : '',
+            cell.date === selectedDate && !disabled ? 'today' : ''].join(' ').trim();
+          return (
+            <div key={cell.key} className={className} onClick={() => !disabled && onDayClick(cell.date)}
+              title={cell.isMeasure ? `${MEASURE_LABELS[cell.measureIdx]}量測日` : ''}>
+              <div className="flex justify-between items-start">
+                <span className="day-num">{cell.day}</span>
+                {cell.dayNum != null && <span className="day-meta">D{cell.dayNum}</span>}
+              </div>
+              {cell.isMeasure && <div className="day-meta measure mt-0.5">{MEASURE_LABELS[cell.measureIdx]}</div>}
+              {!cell.isBeforeStart && !cell.isAfterEnd && (
+                <div className="day-dots">
+                  <div className={`day-dot ${cell.workout ? 'workout' : ''}`}></div>
+                  <div className={`day-dot ${cell.diet ? 'diet' : ''}`}></div>
+                  <div className={`day-dot ${cell.photo ? 'photo' : ''}`}></div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-4 text-xs text-[var(--text-dim)] mono mt-3 flex-wrap">
+        <span className="flex items-center gap-1"><span className="day-dot workout"></span>運動</span>
+        <span className="flex items-center gap-1"><span className="day-dot diet"></span>飲食</span>
+        <span className="flex items-center gap-1"><span className="day-dot photo"></span>拍照</span>
+        <span className="flex items-center gap-1"><span style={{width:8,height:8,background:'rgba(255,94,58,0.3)',border:'1px solid var(--accent-2)',borderRadius:2,display:'inline-block'}}></span>量測日</span>
+        {testMode && <span style={{color:'var(--accent-2)'}}>● 測試模式</span>}
+      </div>
+    </div>
+  );
+};
+
+const Header = ({ store, setView, view }) => {
+  const day = store.testMode ? TOTAL_DAYS : Math.max(1, Math.min(TOTAL_DAYS, dayDiff(store.startDate, todayStr()) + 1));
+  const pct = Math.min(100, (day / TOTAL_DAYS) * 100);
+  return (
+    <header className="border-b border-[var(--border)] sticky top-0 z-50 backdrop-blur" style={{background: 'rgba(10,10,10,0.85)'}}>
+      {store.testMode && <div className="test-banner">⚠ 測試模式 ON · 可打卡未來日期、可填寫所有量測階段</div>}
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="pulse-dot"></div>
+            <div>
+              <div className="display-font text-2xl tracking-wider">減脂增肌 / FORGE</div>
+              <div className="text-xs text-[var(--text-dim)] mono">12-WEEK CHALLENGE · DAY {day}/{TOTAL_DAYS}{store.testMode ? ' · TEST' : ''}</div>
+            </div>
+          </div>
+          <nav className="flex gap-1 text-sm flex-wrap">
+            {[['leaderboard','排行榜'],['checkin','每日打卡'],['dashboard','我的儀表板'],['register','報名'],['rules','規則']].map(([k,l]) => (
+              <button key={k} onClick={() => setView(k)}
+                className={`px-4 py-2 border-b-2 border-transparent transition-colors hover:text-[var(--accent)] ${view === k ? 'tab-active' : 'text-[var(--text-dim)]'}`}>
+                {l}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-3 progress-bar"><div className="progress-fill" style={{width: `${pct}%`}}></div></div>
+      </div>
+    </header>
+  );
+};
+
+const RegisterView = ({ store, setStore, setView, setCurrentUser }) => {
+  const [form, setForm] = useState({ name: '', gender: 'M', age: '', height: '', startWeight: '', startFat: '', startMuscle: '', pin: '' });
+  const [err, setErr] = useState('');
+
+  const submit = () => {
+    if (!form.name || !form.startWeight || !form.startFat || !form.startMuscle || !form.pin) { setErr('姓名、體重、體脂率、肌肉量、密碼為必填'); return; }
+    if (form.pin.length < 4) { setErr('密碼至少4位數'); return; }
+    if (store.participants.some(p => p.name === form.name)) { setErr('已有同名參賽者，請加暱稱區分'); return; }
+
+    const id = 'u_' + Date.now();
+    const newP = {
+      id, name: form.name, gender: form.gender,
+      age: parseInt(form.age) || null, height: parseFloat(form.height) || null,
+      startWeight: parseFloat(form.startWeight), pin: form.pin,
+      joinedAt: new Date().toISOString()
+    };
+    const measures = {
+      ...store.measures,
+      [id]: { 0: { weight: parseFloat(form.startWeight), fat: parseFloat(form.startFat), muscle: parseFloat(form.startMuscle), date: store.startDate } }
+    };
+    const newStore = { ...store, participants: [...store.participants, newP], measures, currentUser: id };
+    saveStore(newStore); setStore(newStore); setCurrentUser(id); setErr(''); setView('checkin');
+  };
+
+  const measureDateList = measureDates(store.startDate);
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="mb-8">
+        <div className="text-xs text-[var(--accent)] mono mb-2">// REGISTRATION</div>
+        <h1 className="display-font text-5xl mb-2">加入挑戰</h1>
+        <p className="text-[var(--text-dim)]">填寫初始量測（5/6 InBody 數據）即可開始打卡。</p>
+      </div>
+
+      <div className="card p-4 mb-4 border-l-2 border-[var(--accent)]">
+        <div className="text-xs text-[var(--text-dim)] mono">活動期間</div>
+        <div className="display-font text-lg mt-1">
+          {formatDateZh(store.startDate)} <span className="text-[var(--text-dim)]">→</span> {formatDateZh(addDays(store.startDate, TOTAL_DAYS - 1))}
+        </div>
+        <div className="text-xs text-[var(--text-dim)] mono mt-2">量測日：{measureDateList.slice(1).map(formatDateZh).join(' · ')}</div>
+      </div>
+
+      <div className="card p-6 space-y-5">
+        <div className="grid grid-cols-2 gap-4">
+          <div><div className="label">姓名 / 暱稱 *</div><input className="input" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="例如 Alex"/></div>
+          <div><div className="label">性別 *</div>
+            <select className="select" value={form.gender} onChange={e => setForm({...form, gender: e.target.value})}>
+              <option value="M">男</option><option value="F">女</option>
+            </select></div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div><div className="label">年齡</div><input className="input" type="number" value={form.age} onChange={e => setForm({...form, age: e.target.value})}/></div>
+          <div><div className="label">身高 (cm)</div><input className="input" type="number" value={form.height} onChange={e => setForm({...form, height: e.target.value})}/></div>
+        </div>
+        <div className="divider"></div>
+        <div className="text-xs text-[var(--accent)] mono">// 初始量測 · 5/6 InBody 數據</div>
+        <div className="grid grid-cols-3 gap-4">
+          <div><div className="label">體重 kg *</div><input className="input" type="number" step="0.1" value={form.startWeight} onChange={e => setForm({...form, startWeight: e.target.value})}/></div>
+          <div><div className="label">體脂率 % *</div><input className="input" type="number" step="0.1" value={form.startFat} onChange={e => setForm({...form, startFat: e.target.value})}/></div>
+          <div><div className="label">肌肉量 kg *</div><input className="input" type="number" step="0.1" value={form.startMuscle} onChange={e => setForm({...form, startMuscle: e.target.value})}/></div>
+        </div>
+        <div className="divider"></div>
+        <div><div className="label">登入密碼 (4位數以上) *</div>
+          <input className="input" type="password" value={form.pin} onChange={e => setForm({...form, pin: e.target.value})} placeholder="只用於登入打卡"/></div>
+        {err && <div className="text-[var(--accent-2)] text-sm">{err}</div>}
+        <button className="btn-primary w-full py-3 rounded display-font text-xl tracking-wider" onClick={submit}>開始挑戰 →</button>
+      </div>
+    </div>
+  );
+};
+
+const LoginPicker = ({ store, onLogin }) => {
+  const [selected, setSelected] = useState('');
+  const [pin, setPin] = useState('');
+  const [err, setErr] = useState('');
+  const login = () => {
+    const p = store.participants.find(x => x.id === selected);
+    if (!p) { setErr('請選擇參賽者'); return; }
+    if (p.pin !== pin) { setErr('密碼錯誤'); return; }
+    onLogin(p.id); setErr('');
+  };
+  return (
+    <div className="card p-6 max-w-md mx-auto">
+      <div className="label">選擇你的帳號</div>
+      <select className="select mb-3" value={selected} onChange={e => setSelected(e.target.value)}>
+        <option value="">— 選擇參賽者 —</option>
+        {store.participants.map(p => <option key={p.id} value={p.id}>{p.name} ({p.gender === 'M' ? '男' : '女'})</option>)}
+      </select>
+      <input className="input mb-3" type="password" placeholder="密碼" value={pin} onChange={e => setPin(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()}/>
+      {err && <div className="text-[var(--accent-2)] text-sm mb-3">{err}</div>}
+      <button className="btn-primary w-full py-2 rounded" onClick={login}>登入</button>
+    </div>
+  );
+};
+
+const CheckinView = ({ store, setStore, currentUser, setCurrentUser, setView }) => {
+  const startDate = store.startDate;
+  const endDate = addDays(startDate, TOTAL_DAYS - 1);
+  const initDate = todayStr() < startDate ? startDate : todayStr() > endDate ? endDate : todayStr();
+  const [date, setDate] = useState(initDate);
+  const [msg, setMsg] = useState('');
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+
+  if (!currentUser) {
+    if (store.participants.length === 0) {
+      return (
+        <div className="max-w-2xl mx-auto px-6 py-20 text-center">
+          <div className="display-font text-3xl mb-3">尚未有人報名</div>
+          <p className="text-[var(--text-dim)] mb-6">先到「報名」頁建立第一筆資料</p>
+          <button className="btn-primary px-6 py-2 rounded" onClick={() => setView('register')}>前往報名</button>
+        </div>
+      );
+    }
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-12">
+        <div className="text-xs text-[var(--accent)] mono mb-2">// LOG IN</div>
+        <h1 className="display-font text-4xl mb-6">登入以打卡</h1>
+        <LoginPicker store={store} onLogin={(id) => { const ns = {...store, currentUser: id}; saveStore(ns); setStore(ns); setCurrentUser(id); }}/>
+      </div>
+    );
+  }
+
+  const user = store.participants.find(p => p.id === currentUser);
+  const userCheckins = store.checkins[currentUser] || {};
+  const userPhotos = store.photos[currentUser] || {};
+  const todayCheckin = userCheckins[date] || { workout: false, diet: false };
+  const todayPhotos = userPhotos[date] || [];
+  const dayNum = dayDiff(startDate, date) + 1;
+  const isFuture = date > todayStr();
+  const isOutside = date < startDate || date > endDate;
+  const canEdit = !isOutside && (!isFuture || store.testMode);
+
+  const toggleWorkoutDiet = (key) => {
+    if (!canEdit) return;
+    const newCheckin = { ...todayCheckin, [key]: !todayCheckin[key] };
+    const newCheckins = { ...userCheckins };
+    if (!newCheckin.workout && !newCheckin.diet) delete newCheckins[date];
+    else newCheckins[date] = newCheckin;
+    const newStore = { ...store, checkins: { ...store.checkins, [currentUser]: newCheckins } };
+    if (saveStore(newStore)) { setStore(newStore); setMsg('已儲存 ✓'); setTimeout(() => setMsg(''), 1500); }
+  };
+
+  const addPhoto = (photo) => {
+    if (!canEdit) return;
+    const newPhotosForDate = [...todayPhotos, photo];
+    const newUserPhotos = { ...userPhotos, [date]: newPhotosForDate };
+    const newStore = { ...store, photos: { ...store.photos, [currentUser]: newUserPhotos } };
+    if (saveStore(newStore)) { setStore(newStore); setMsg('照片已上傳 ✓'); setTimeout(() => setMsg(''), 1500); }
+  };
+
+  const deletePhoto = (idx) => {
+    if (!canEdit) return;
+    if (!confirm('確定刪除這張照片？')) return;
+    const newPhotosForDate = todayPhotos.filter((_, i) => i !== idx);
+    const newUserPhotos = { ...userPhotos };
+    if (newPhotosForDate.length === 0) delete newUserPhotos[date];
+    else newUserPhotos[date] = newPhotosForDate;
+    const newStore = { ...store, photos: { ...store.photos, [currentUser]: newUserPhotos } };
+    if (saveStore(newStore)) { setStore(newStore); setMsg('已刪除'); setTimeout(() => setMsg(''), 1500); }
+  };
+
+  const logout = () => { const ns = {...store, currentUser: null}; saveStore(ns); setStore(ns); setCurrentUser(null); };
+
+  const workoutDays = Object.values(userCheckins).filter(c => c.workout).length;
+  const dietDays = Object.values(userCheckins).filter(c => c.diet).length;
+  const photoDays = Object.keys(userPhotos).filter(d => (userPhotos[d] || []).length > 0).length;
+  const totalCheckins = workoutDays + dietDays + photoDays;
+  const totalPhotos = Object.values(userPhotos).reduce((s, arr) => s + arr.length, 0);
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
+        <div>
+          <div className="text-xs text-[var(--accent)] mono mb-2">// CHECK-IN · {user.name.toUpperCase()}</div>
+          <h1 className="display-font text-4xl">每日打卡</h1>
+          <p className="text-sm text-[var(--text-dim)] mt-1">運動/飲食點格子，照片直接上傳</p>
+        </div>
+        <button className="btn-ghost px-4 py-2 rounded text-sm" onClick={logout}>切換帳號</button>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        <div>
+          <div className="card p-5 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-xs text-[var(--text-dim)] mono">打卡日期</div>
+                <div className="display-font text-2xl">{formatDateZh(date)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-[var(--text-dim)] mono">挑戰</div>
+                <div className="display-font text-2xl text-[var(--accent)]">{!isOutside ? `DAY ${dayNum}` : '—'}</div>
+              </div>
+            </div>
+            {isFuture && !store.testMode && <div className="text-xs text-[var(--accent-2)]">無法打卡未來日期</div>}
+            {isFuture && store.testMode && <div className="text-xs text-[var(--accent-2)]">測試模式：可打卡未來日期</div>}
+            {isOutside && <div className="text-xs text-[var(--accent-2)]">超出活動期間</div>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className={`checkin-tile ${todayCheckin.workout ? 'active' : ''} ${!canEdit ? 'disabled' : ''}`} onClick={() => toggleWorkoutDiet('workout')}>
+              <div className="check-icon">{todayCheckin.workout ? '✓' : '○'}</div>
+              <div className="display-font text-lg tracking-wider">運動</div>
+              <div className="text-xs text-[var(--text-dim)] mono">WORKOUT</div>
+            </div>
+            <div className={`checkin-tile ${todayCheckin.diet ? 'active' : ''} ${!canEdit ? 'disabled' : ''}`} onClick={() => toggleWorkoutDiet('diet')}>
+              <div className="check-icon">{todayCheckin.diet ? '✓' : '○'}</div>
+              <div className="display-font text-lg tracking-wider">飲食</div>
+              <div className="text-xs text-[var(--text-dim)] mono">DIET</div>
+            </div>
+          </div>
+
+          <div className="text-center text-sm text-[var(--accent)] mono h-5 mb-4">{msg}</div>
+
+          <div className="grid grid-cols-4 gap-3">
+            <div className="card p-3 text-center">
+              <div className="label">總分</div>
+              <div className="display-font text-2xl text-[var(--accent)]">{totalCheckins}</div>
+              <div className="text-xs text-[var(--text-dim)] mono">/ {TOTAL_DAYS * 3}</div>
+            </div>
+            <div className="card p-3 text-center">
+              <div className="label">運動</div>
+              <div className="display-font text-2xl">{workoutDays}</div>
+              <div className="text-xs text-[var(--text-dim)] mono">天</div>
+            </div>
+            <div className="card p-3 text-center">
+              <div className="label">飲食</div>
+              <div className="display-font text-2xl">{dietDays}</div>
+              <div className="text-xs text-[var(--text-dim)] mono">天</div>
+            </div>
+            <div className="card p-3 text-center">
+              <div className="label">照片</div>
+              <div className="display-font text-2xl" style={{color: 'var(--photo)'}}>{photoDays}</div>
+              <div className="text-xs text-[var(--text-dim)] mono">天 · {totalPhotos}張</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-5">
+          <MonthCalendar store={store} userCheckins={userCheckins} userPhotos={userPhotos} onDayClick={setDate} selectedDate={date}/>
+        </div>
+      </div>
+
+      {/* Photos for selected date */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="label !mb-1">{formatDateZh(date)} 的飲食照片</div>
+            <div className="text-xs text-[var(--text-dim)] mono">
+              {todayPhotos.length === 0 ? '尚未上傳' : `已上傳 ${todayPhotos.length} 張 · 當天有 1 張以上即計分`}
+            </div>
+          </div>
+          {todayPhotos.length > 0 && <span className="badge" style={{background:'rgba(255,142,192,0.15)', color:'var(--photo)'}}>已加分</span>}
+        </div>
+        <PhotoGrid
+          photos={todayPhotos}
+          onAdd={addPhoto}
+          onDelete={deletePhoto}
+          onView={setLightboxPhoto}
+          canEdit={canEdit}
+          readOnly={false}
+        />
+      </div>
+
+      {lightboxPhoto && <Lightbox photo={lightboxPhoto} onClose={() => setLightboxPhoto(null)}/>}
+    </div>
+  );
+};
+
+const MeasureBlock = ({ store, setStore, currentUser, readOnly }) => {
+  const userMeasures = store.measures[currentUser] || {};
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ weight: '', fat: '', muscle: '' });
+  const [msg, setMsg] = useState('');
+
+  const measureDateList = measureDates(store.startDate);
+
+  const startEdit = (idx) => {
+    if (readOnly) return;
+    if (idx === 0 && !store.testMode) return;
+    const existing = userMeasures[idx];
+    setForm({ weight: existing?.weight ?? '', fat: existing?.fat ?? '', muscle: existing?.muscle ?? '' });
+    setEditing(idx);
+  };
+
+  const saveMeasure = () => {
+    if (!form.weight || !form.fat || !form.muscle) { setMsg('三項都要填'); return; }
+    const newMeasures = { ...userMeasures, [editing]: { weight: parseFloat(form.weight), fat: parseFloat(form.fat), muscle: parseFloat(form.muscle), date: todayStr() } };
+    const newStore = { ...store, measures: { ...store.measures, [currentUser]: newMeasures } };
+    if (saveStore(newStore)) { setStore(newStore); setEditing(null); setMsg('已儲存 ✓'); setTimeout(() => setMsg(''), 1500); }
+  };
+
+  return (
+    <div className="card p-5 mb-6">
+      <div className="label">量測紀錄 · 共 4 次{!readOnly && store.testMode && <span className="ml-2 text-[var(--accent-2)]">[測試模式]</span>}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+        {MEASURE_WEEKS.map((week, idx) => {
+          const m = userMeasures[idx];
+          const targetDate = measureDateList[idx];
+          const isToday = todayStr() >= targetDate;
+          const isPast = m != null;
+          const isEditable = !readOnly && (store.testMode || idx !== 0);
+          return (
+            <div key={idx}
+              className={`card-2 p-3 transition-all ${isEditable ? 'cursor-pointer' : ''} ${isPast ? '' : isToday ? 'border-[var(--accent)]' : ''}`}
+              onClick={() => isEditable ? startEdit(idx) : null}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="display-font text-lg">{MEASURE_LABELS[idx]}</span>
+                {isPast ? <span className="badge" style={{background: 'rgba(212,255,58,0.15)', color: 'var(--accent)'}}>已量</span>
+                  : isToday ? <span className="badge" style={{background: 'rgba(255,94,58,0.15)', color: 'var(--accent-2)'}}>應量</span>
+                  : <span className="badge" style={{background: 'var(--surface)', color: 'var(--text-dim)'}}>未到</span>}
+              </div>
+              <div className="text-xs text-[var(--text-dim)] mono mb-2">{formatDateZh(targetDate)}</div>
+              {m ? (
+                <div className="text-xs space-y-1 mono">
+                  <div>體重 <span className="text-[var(--text)]">{m.weight}</span> kg</div>
+                  <div>體脂 <span className="text-[var(--accent)]">{m.fat}</span> %</div>
+                  <div>肌肉 <span className="text-[var(--text)]">{m.muscle}</span> kg</div>
+                </div>
+              ) : <div className="text-xs text-[var(--text-dim)] mono">尚未量測</div>}
+            </div>
+          );
+        })}
+      </div>
+      {editing != null && (
+        <div className="mt-4 card-2 p-4">
+          <div className="flex justify-between items-center mb-3">
+            <div className="display-font text-xl">填寫 / 修改 · {MEASURE_LABELS[editing]}</div>
+            <button className="text-[var(--text-dim)] hover:text-[var(--accent-2)]" onClick={() => setEditing(null)}>✕</button>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div><div className="label">體重 kg</div><input className="input" type="number" step="0.1" value={form.weight} onChange={e => setForm({...form, weight: e.target.value})}/></div>
+            <div><div className="label">體脂率 %</div><input className="input" type="number" step="0.1" value={form.fat} onChange={e => setForm({...form, fat: e.target.value})}/></div>
+            <div><div className="label">肌肉量 kg</div><input className="input" type="number" step="0.1" value={form.muscle} onChange={e => setForm({...form, muscle: e.target.value})}/></div>
+          </div>
+          <div className="flex justify-between items-center mt-3">
+            <span className="text-sm text-[var(--accent)] mono">{msg}</span>
+            <button className="btn-primary px-5 py-2 rounded" onClick={saveMeasure}>儲存量測</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============ Profile View (any participant, read-only for others) ============
+const Sparkline = ({ data, color = 'var(--accent)' }) => {
+  if (!data || data.length < 2) return <div className="text-xs text-[var(--text-dim)] mono py-4">資料不足，需至少 2 次量測</div>;
+  const w = 280, h = 60;
+  const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {data.map((v, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = h - ((v - min) / range) * h;
+        return <circle key={i} cx={x} cy={y} r="3" fill={color}/>;
+      })}
+    </svg>
+  );
+};
+
+const ProfileView = ({ store, setStore, profileUserId, isMe, onBack }) => {
+  const user = store.participants.find(p => p.id === profileUserId);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+
+  if (!user) return null;
+  const score = computeScore(user, store);
+  const userMeasures = store.measures[profileUserId] || {};
+  const userCheckins = store.checkins[profileUserId] || {};
+  const userPhotos = store.photos[profileUserId] || {};
+
+  const ranked = store.participants.map(p => ({...p, ...computeScore(p, store)}));
+  const sameGender = ranked.filter(p => p.gender === user.gender).sort((a,b) => b.total - a.total);
+  const myRank = sameGender.findIndex(p => p.id === profileUserId) + 1;
+
+  const orderedKeys = Object.keys(userMeasures).map(Number).sort((a,b) => a-b);
+  const weights = orderedKeys.map(k => userMeasures[k].weight).filter(Boolean);
+  const fats = orderedKeys.map(k => userMeasures[k].fat).filter(Boolean);
+  const muscles = orderedKeys.map(k => userMeasures[k].muscle).filter(Boolean);
+
+  const photosForSelected = selectedDate ? (userPhotos[selectedDate] || []) : [];
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
+        <div>
+          {!isMe && <button className="btn-ghost px-3 py-1 rounded text-xs mb-3" onClick={onBack}>← 回排行榜</button>}
+          <div className="text-xs text-[var(--accent)] mono mb-2">// {isMe ? 'MY DASHBOARD' : 'PARTICIPANT PROFILE'}</div>
+          <h1 className="display-font text-5xl">{user.name}</h1>
+          <div className="mt-2 flex gap-2 items-center flex-wrap">
+            <span className={`badge ${user.gender === 'M' ? 'badge-m' : 'badge-f'}`}>{user.gender === 'M' ? '男子組' : '女子組'}</span>
+            <span className="text-sm text-[var(--text-dim)] mono">同組排名 #{myRank}/{sameGender.length}</span>
+            {myRank === 1 && <span className="text-sm text-[var(--accent)]">★ 暫時領先</span>}
+            {!isMe && <span className="text-xs text-[var(--text-dim)] mono">(只能查看，無法編輯)</span>}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="card p-5">
+          <div className="label">綜合分數</div>
+          <div className="stat-num text-[var(--accent)]">{score.total.toFixed(1)}</div>
+          <div className="text-xs text-[var(--text-dim)] mono mt-1">/ 100</div>
+        </div>
+        <div className="card p-5">
+          <div className="label">減脂率</div>
+          <div className="stat-num">{score.fatChange > 0 ? '−' : score.fatChange < 0 ? '+' : ''}{Math.abs(score.fatChange).toFixed(1)}<span className="text-xl">%</span></div>
+          <div className="text-xs text-[var(--text-dim)] mono mt-1">{score.start?.fat ?? '—'}% → {score.latest?.fat?.toFixed(1) ?? '—'}%</div>
+        </div>
+        <div className="card p-5">
+          <div className="label">增肌率</div>
+          <div className="stat-num">{score.muscleChange >= 0 ? '+' : ''}{score.muscleChange.toFixed(1)}<span className="text-xl">%</span></div>
+          <div className="text-xs text-[var(--text-dim)] mono mt-1">{score.start?.muscle ?? '—'}kg → {score.latest?.muscle?.toFixed(1) ?? '—'}kg</div>
+        </div>
+        <div className="card p-5">
+          <div className="label">出勤率</div>
+          <div className="stat-num">{score.processScore.toFixed(0)}<span className="text-xl">%</span></div>
+          <div className="text-xs text-[var(--text-dim)] mono mt-1">運動{score.workoutDays}·飲食{score.dietDays}·照片{score.photoDays}</div>
+        </div>
+      </div>
+
+      <MeasureBlock store={store} setStore={setStore} currentUser={profileUserId} readOnly={!isMe}/>
+
+      <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="card p-5">
+          <div className="label">體重變化 (kg)</div>
+          <Sparkline data={weights} color="#d4ff3a"/>
+          <div className="text-xs text-[var(--text-dim)] mono mt-2">
+            {weights.length >= 2 ? `${weights[0]} → ${weights[weights.length-1]} (${(weights[weights.length-1] - weights[0]).toFixed(1)})` : `${weights[0] ?? '—'}`}
+          </div>
+        </div>
+        <div className="card p-5">
+          <div className="label">體脂率變化 (%)</div>
+          <Sparkline data={fats} color="#ff5e3a"/>
+          <div className="text-xs text-[var(--text-dim)] mono mt-2">
+            {fats.length >= 2 ? `${fats[0]} → ${fats[fats.length-1]} (${(fats[fats.length-1] - fats[0]).toFixed(1)})` : `${fats[0] ?? '—'}`}
+          </div>
+        </div>
+        <div className="card p-5">
+          <div className="label">肌肉量變化 (kg)</div>
+          <Sparkline data={muscles} color="#6ab8ff"/>
+          <div className="text-xs text-[var(--text-dim)] mono mt-2">
+            {muscles.length >= 2 ? `${muscles[0]} → ${muscles[muscles.length-1]} (${(muscles[muscles.length-1] - muscles[0]).toFixed(1)})` : `${muscles[0] ?? '—'}`}
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-5 mb-6">
+        <div className="label">分數組成 (滿分 100)</div>
+        <div className="space-y-3 mt-3">
+          {[['減脂分 (40分)', score.fatScore * 0.4, 40, '#d4ff3a'],
+            ['增肌分 (40分)', score.muscleScore * 0.4, 40, '#ff5e3a'],
+            ['過程分 (20分)', score.processScore * 0.2, 20, '#6ab8ff']].map(([label, val, max, color]) => (
+            <div key={label}>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="mono text-[var(--text-dim)]">{label}</span>
+                <span className="mono">{val.toFixed(1)} / {max}</span>
+              </div>
+              <div className="progress-bar"><div className="progress-fill" style={{width: `${(val / max) * 100}%`, background: color}}></div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="card p-5">
+          <div className="label mb-3">{isMe ? '我的' : `${user.name} 的`}打卡紀錄</div>
+          <MonthCalendar store={store} userCheckins={userCheckins} userPhotos={userPhotos} onDayClick={setSelectedDate} selectedDate={selectedDate}/>
+          <div className="text-xs text-[var(--text-dim)] mono mt-3">點任一天可查看當天的飲食照片</div>
+        </div>
+        <div className="card p-5">
+          <div className="label mb-3">
+            {selectedDate ? `${formatDateZh(selectedDate)} 的飲食照片` : '飲食照片'}
+            {selectedDate && photosForSelected.length > 0 && <span className="ml-2 text-xs text-[var(--photo)] mono">({photosForSelected.length} 張)</span>}
+          </div>
+          {!selectedDate && <div className="text-center text-sm text-[var(--text-dim)] py-12 mono">← 點月曆上的日期查看照片</div>}
+          {selectedDate && (
+            <PhotoGrid photos={photosForSelected} onView={setLightboxPhoto} readOnly={true} canEdit={false} onAdd={() => {}} onDelete={() => {}}/>
+          )}
+        </div>
+      </div>
+
+      {lightboxPhoto && <Lightbox photo={lightboxPhoto} onClose={() => setLightboxPhoto(null)}/>}
+    </div>
+  );
+};
+
+const LeaderboardView = ({ store, onSelectParticipant }) => {
+  const [tab, setTab] = useState('total');
+  const ranked = useMemo(() => store.participants.map(p => ({ ...p, ...computeScore(p, store) })), [store]);
+  const sortFn = {
+    total: (a,b) => b.total - a.total, fat: (a,b) => b.fatChange - a.fatChange,
+    muscle: (a,b) => b.muscleChange - a.muscleChange, process: (a,b) => b.processScore - a.processScore
+  };
+  const males = ranked.filter(p => p.gender === 'M').sort(sortFn[tab]);
+  const females = ranked.filter(p => p.gender === 'F').sort(sortFn[tab]);
+
+  if (store.participants.length === 0) {
+    return <div className="max-w-2xl mx-auto px-6 py-20 text-center">
+      <div className="display-font text-3xl mb-3">尚未有人報名</div>
+      <p className="text-[var(--text-dim)]">排行榜會在有人報名後自動產生</p>
+    </div>;
+  }
+
+  const tabs = [['total','綜合分數','滿分 100 / 40 + 40 + 20'],
+    ['fat','減脂率','體脂下降 %'], ['muscle','增肌率','肌肉量增加 %'], ['process','出勤率','打卡完成度']];
+
+  const renderRow = (p, idx) => {
+    const valMap = {
+      total: p.total.toFixed(1),
+      fat: (p.fatChange > 0 ? '−' : p.fatChange < 0 ? '+' : '') + Math.abs(p.fatChange).toFixed(2) + '%',
+      muscle: (p.muscleChange >= 0 ? '+' : '') + p.muscleChange.toFixed(2) + '%',
+      process: p.processScore.toFixed(0) + '%'
+    };
+    const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'text-[var(--text-dim)]';
+    return (
+      <div key={p.id} className="px-4 py-3 flex items-center gap-4 border-b border-[var(--border)] last:border-0 clickable-row"
+        onClick={() => onSelectParticipant(p.id)}>
+        <div className={`display-font text-3xl w-12 ${rankClass}`}>{String(idx + 1).padStart(2, '0')}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold truncate flex items-center gap-2">
+            {p.name}
+            {idx === 0 && tab === 'total' && <span className="text-xs text-[var(--accent)]">★ 冠軍</span>}
+            <span className="text-xs text-[var(--text-dim)] mono">▸</span>
+          </div>
+          <div className="text-xs text-[var(--text-dim)] mono">
+            {p.measuresCount} 次量測 · {p.totalPhotos} 張照片 · 起 {p.start?.fat ?? '—'}% → 現 {p.latest?.fat?.toFixed(1) ?? '—'}%
+          </div>
+        </div>
+        <div className="display-font text-3xl mono">{valMap[tab]}</div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="mb-8">
+        <div className="text-xs text-[var(--accent)] mono mb-2">// LIVE LEADERBOARD</div>
+        <h1 className="display-font text-5xl">即時排行榜</h1>
+        <p className="text-sm text-[var(--text-dim)] mt-2">綜合分數滿分 100 · 男女組各取一位綜合冠軍 · 點名字看詳細資料</p>
+      </div>
+
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {tabs.map(([k, label, desc]) => (
+          <button key={k} onClick={() => setTab(k)}
+            className={`px-4 py-3 rounded transition-all text-left ${tab === k ? 'card border-[var(--accent)]' : 'card-2 hover:border-[var(--text-dim)]'}`}
+            style={tab === k ? {borderColor: 'var(--accent)'} : {}}>
+            <div className={`font-bold ${tab === k ? 'text-[var(--accent)]' : ''}`}>{label}</div>
+            <div className="text-xs text-[var(--text-dim)] mono">{desc}</div>
+          </button>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card overflow-hidden">
+          <div className="px-4 py-3 bg-[var(--surface-2)] flex items-center justify-between">
+            <span className="display-font text-2xl tracking-wider">男子組</span>
+            <span className="badge badge-m">M · {males.length}</span>
+          </div>
+          {males.length === 0 ? <div className="px-4 py-8 text-center text-[var(--text-dim)] text-sm">尚無男性參賽者</div> : males.map(renderRow)}
+        </div>
+        <div className="card overflow-hidden">
+          <div className="px-4 py-3 bg-[var(--surface-2)] flex items-center justify-between">
+            <span className="display-font text-2xl tracking-wider">女子組</span>
+            <span className="badge badge-f">F · {females.length}</span>
+          </div>
+          {females.length === 0 ? <div className="px-4 py-8 text-center text-[var(--text-dim)] text-sm">尚無女性參賽者</div> : females.map(renderRow)}
+        </div>
+      </div>
+
+      <details className="mt-8 card p-5">
+        <summary className="text-sm text-[var(--text-dim)] hover:text-[var(--accent)]">▸ 查看計分公式（滿分 100）</summary>
+        <div className="mt-4 text-sm text-[var(--text-dim)] leading-relaxed mono space-y-2">
+          <div>• 減脂分（最多 40） = min(100, 減脂率/{FAT_CAP}×100) × 0.4</div>
+          <div>• 增肌分（最多 40） = min(100, 增肌率/{MUSCLE_CAP}×100) × 0.4</div>
+          <div>• 過程分（最多 20） = (打卡數 / (天數×3)) × 100 × 0.2</div>
+          <div>• 安全護欄：男體脂&lt;10%、女&lt;16% 不再加分</div>
+          <div>• 男女分組獨立排名，各取一位綜合冠軍</div>
+        </div>
+      </details>
+    </div>
+  );
+};
+
+const RulesView = ({ store, setStore }) => {
+  const [editing, setEditing] = useState(false);
+  const [newDate, setNewDate] = useState(store.startDate);
+  const setStartDate = () => { const ns = {...store, startDate: newDate}; saveStore(ns); setStore(ns); setEditing(false); };
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(store, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `fitness-challenge-${todayStr()}.json`; a.click();
+  };
+  const reset = () => { if (!confirm('確定要清空所有資料？此動作無法復原')) return; localStorage.removeItem(STORE_KEY); location.reload(); };
+  const measureDateList = measureDates(store.startDate);
+  const toggleTestMode = () => { const ns = {...store, testMode: !store.testMode}; saveStore(ns); setStore(ns); };
+
+  // Calculate storage usage
+  const storageUsage = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(STORE_KEY) || '';
+      const bytes = new Blob([raw]).size;
+      return { kb: (bytes / 1024).toFixed(0), mb: (bytes / 1024 / 1024).toFixed(2) };
+    } catch (e) { return { kb: '?', mb: '?' }; }
+  }, [store]);
+
+  const totalPhotos = useMemo(() =>
+    Object.values(store.photos || {}).reduce((s, perUser) =>
+      s + Object.values(perUser).reduce((s2, arr) => s2 + arr.length, 0), 0
+    ), [store]);
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="text-xs text-[var(--accent)] mono mb-2">// RULES & SCORING</div>
+      <h1 className="display-font text-5xl mb-8">活動規則</h1>
+
+      <div className="space-y-6">
+        <div className="card p-6">
+          <h2 className="display-font text-2xl mb-3 text-[var(--accent)]">期程</h2>
+          <p className="text-sm leading-relaxed mb-3">挑戰共 <strong>12 週 (84 天)</strong>。男女分組計分，公式相同，<strong>男女組各取一位綜合冠軍</strong>。</p>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-sm mono text-[var(--text-dim)]">起始日：</span>
+            {editing ? (<>
+              <input type="date" className="input max-w-[180px]" value={newDate} onChange={e => setNewDate(e.target.value)}/>
+              <button className="btn-primary px-3 py-1 rounded text-sm" onClick={setStartDate}>儲存</button>
+            </>) : (<>
+              <span className="mono">{formatDateZh(store.startDate)}</span>
+              <button className="btn-ghost px-3 py-1 rounded text-xs" onClick={() => setEditing(true)}>修改</button>
+            </>)}
+          </div>
+          <div className="card-2 p-3">
+            <div className="text-xs text-[var(--text-dim)] mono mb-2">量測排程 (4 次 InBody)</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              {MEASURE_LABELS.map((label, i) => (
+                <div key={i} className="card p-2">
+                  <div className="display-font text-base">{label}</div>
+                  <div className="mono text-[var(--text-dim)]">{formatDateZh(measureDateList[i])}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="display-font text-2xl mb-3 text-[var(--accent)]">每日打卡</h2>
+          <ul className="space-y-1 text-sm leading-relaxed mono ml-4">
+            <li>▸ <strong>運動</strong> · 點格子，當天有完成預計訓練</li>
+            <li>▸ <strong>飲食</strong> · 點格子，當天飲食有控制</li>
+            <li>▸ <strong>照片</strong> · 上傳當天三餐照片，1 張以上即計分</li>
+          </ul>
+          <div className="text-xs text-[var(--text-dim)] mt-3">忘了打卡可以隨時補打。照片可以無限上傳，但每天有 1 張就計分。</div>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="display-font text-2xl mb-3 text-[var(--accent)]">計分公式 (滿分 100)</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
+            <div>
+              <div className="font-bold mb-1">減脂分數 · 最多 40 分</div>
+              <code className="block card-2 p-3 mono text-xs">
+                減脂率 = (初始體脂 − 結束體脂) / 初始體脂 × 100<br/>
+                歸一化 = min(100, 減脂率 / {FAT_CAP} × 100)<br/>
+                <span className="text-[var(--accent)]">貢獻分數 = 歸一化 × 0.4</span>
+              </code>
+            </div>
+            <div>
+              <div className="font-bold mb-1">增肌分數 · 最多 40 分</div>
+              <code className="block card-2 p-3 mono text-xs">
+                增肌率 = (結束肌肉 − 初始肌肉) / 初始肌肉 × 100<br/>
+                歸一化 = min(100, 增肌率 / {MUSCLE_CAP} × 100)<br/>
+                <span className="text-[var(--accent)]">貢獻分數 = 歸一化 × 0.4</span>
+              </code>
+            </div>
+            <div>
+              <div className="font-bold mb-1">過程分數 · 最多 20 分</div>
+              <code className="block card-2 p-3 mono text-xs">
+                出勤率 = 已打卡數 / (天數 × 3) × 100<br/>
+                <span className="text-[var(--accent)]">貢獻分數 = 出勤率 × 0.2</span>
+              </code>
+            </div>
+            <div className="card-2 p-3 border-l-2 border-[var(--accent)]">
+              <div className="font-bold text-[var(--accent)]">綜合分數 = 三項相加 (滿分 100)</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-6 border-l-2 border-[var(--accent-2)]">
+          <h2 className="display-font text-2xl mb-3" style={{color: 'var(--accent-2)'}}>安全提醒</h2>
+          <ul className="space-y-2 text-sm leading-relaxed">
+            <li>▸ 男性體脂率低於 <strong>10%</strong>、女性低於 <strong>16%</strong> 後，再下降不計分。</li>
+            <li>▸ 4 次量測請使用<strong>同一台體脂機、同一時段</strong>。</li>
+            <li>▸ 健康優先，發生不適請立即停止並就醫。</li>
+          </ul>
+        </div>
+
+        <div className="card p-6 border-l-2 border-[var(--accent-2)]" style={{background: 'rgba(255,94,58,0.04)'}}>
+          <h2 className="display-font text-2xl mb-3" style={{color: 'var(--accent-2)'}}>開發者測試模式</h2>
+          <p className="text-sm leading-relaxed mb-4">開啟後可解除日期限制，模擬整個 12 週活動。</p>
+          <div className="flex items-center gap-3">
+            <div className={`toggle ${store.testMode ? 'on' : ''}`} onClick={toggleTestMode}></div>
+            <span className="mono text-sm">{store.testMode ? '測試模式 ON' : '測試模式 OFF'}</span>
+          </div>
+          <div className="text-xs text-[var(--accent-2)] mt-3">⚠ 正式比賽期間請務必關閉。</div>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="display-font text-2xl mb-3 text-[var(--accent)]">資料管理</h2>
+          <div className="text-sm text-[var(--text-dim)] mb-2">
+            目前 {store.participants.length} 位參賽者 · 共 {totalPhotos} 張照片
+          </div>
+          <div className="text-xs text-[var(--text-dim)] mono mb-4">
+            localStorage 使用：{storageUsage.kb} KB ({storageUsage.mb} MB) / 約 5–10 MB 上限
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <button className="btn-ghost px-4 py-2 rounded text-sm" onClick={exportData}>匯出 JSON 備份</button>
+            <button className="btn-ghost px-4 py-2 rounded text-sm" style={{borderColor: 'var(--accent-2)', color: 'var(--accent-2)'}} onClick={reset}>清空所有資料</button>
+          </div>
+          <div className="text-xs text-[var(--text-dim)] mt-3">
+            ※ 雛形版本照片存在瀏覽器中，空間有限。正式上線將使用雲端儲存。
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [store, setStore] = useState(loadStore());
+  const [view, setView] = useState('leaderboard');
+  const [currentUser, setCurrentUser] = useState(store.currentUser);
+  const [profileUserId, setProfileUserId] = useState(null);
+
+  const showProfile = (userId) => {
+    setProfileUserId(userId);
+    setView('profile');
+  };
+
+  return (
+    <div className="min-h-screen">
+      <Header store={store} setView={(v) => { setView(v); if (v !== 'profile') setProfileUserId(null); }} view={view}/>
+      {view === 'register' && <RegisterView store={store} setStore={setStore} setView={setView} setCurrentUser={setCurrentUser}/>}
+      {view === 'checkin' && <CheckinView store={store} setStore={setStore} currentUser={currentUser} setCurrentUser={setCurrentUser} setView={setView}/>}
+      {view === 'leaderboard' && <LeaderboardView store={store} onSelectParticipant={showProfile}/>}
+      {view === 'dashboard' && (
+        currentUser
+          ? <ProfileView store={store} setStore={setStore} profileUserId={currentUser} isMe={true}/>
+          : (store.participants.length === 0
+              ? <div className="max-w-2xl mx-auto px-6 py-20 text-center"><div className="display-font text-3xl mb-3">尚未報名</div></div>
+              : <div className="max-w-2xl mx-auto px-6 py-12">
+                  <h1 className="display-font text-4xl mb-6">登入查看儀表板</h1>
+                  <LoginPicker store={store} onLogin={(id) => { const ns = {...store, currentUser: id}; saveStore(ns); setStore(ns); setCurrentUser(id); }}/>
+                </div>)
+      )}
+      {view === 'profile' && profileUserId && (
+        <ProfileView store={store} setStore={setStore} profileUserId={profileUserId}
+          isMe={profileUserId === currentUser} onBack={() => { setView('leaderboard'); setProfileUserId(null); }}/>
+      )}
+      {view === 'rules' && <RulesView store={store} setStore={setStore}/>}
+      <footer className="border-t border-[var(--border)] mt-20 py-8 text-center text-xs text-[var(--text-dim)] mono">
+        FORGE · 12-WEEK CHALLENGE · 2026.05.07 — 2026.07.29 · 資料儲存於瀏覽器本地，請定期匯出備份
+      </footer>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "name": "fitness-challenge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "12週減脂增肌挑戰賽 — Nuxt 4 + Supabase",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "generate": "nuxt generate",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run tests/unit",
+    "test:unit:watch": "vitest tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:coverage": "vitest run --coverage",
+    "db:gen-types": "supabase gen types typescript --linked > shared/types/database.ts",
+    "db:gen-types:local": "supabase gen types typescript --local > shared/types/database.ts",
+    "db:link": "supabase link",
+    "db:push": "supabase db push",
+    "db:reset:local": "supabase db reset",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop"
+  },
+  "dependencies": {
+    "@nuxtjs/supabase": "^1.5.0",
+    "@nuxtjs/tailwindcss": "^6.12.2",
+    "nuxt": "^4.0.0",
+    "pino": "^9.5.0",
+    "pino-roll": "^3.0.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.0.0",
+    "@nuxt/test-utils": "^3.23.0",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^3.2.0",
+    "eslint": "^9.17.0",
+    "happy-dom": "^15.11.7",
+    "pino-pretty": "^11.3.0",
+    "supabase": "^1.219.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.0",
+    "vue-tsc": "^2.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

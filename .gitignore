@@ -1,0 +1,49 @@
+# Nuxt
+.nuxt
+.output
+.nitro
+.cache
+dist
+
+# Node
+node_modules
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage
+.nyc_output
+playwright-report
+test-results
+.vitest-cache
+
+# Logs (本地 pino-roll 輸出)
+logs/*
+!logs/.gitkeep
+
+# Supabase (本地開發)
+supabase/.branches
+supabase/.temp
+supabase/seed.sql
+
+# Vercel
+.vercel
