@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+// 此檔測試真實 compressImage —— 取消 setup.ts 的全域 mock。
+vi.unmock('~/utils/image-compress')
+
 describe('utils/image-compress', () => {
   describe('在 Node 環境（無 window）', () => {
     const originalWindow = globalThis.window

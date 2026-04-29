@@ -7,10 +7,8 @@ const id = computed(() => String(route.params.id))
 useHead({ title: '參賽者 · 減脂增肌挑戰賽' })
 
 const { getById } = useParticipants()
-const { list: listMeasures } = useMeasures()
-const { countAll } = useCheckins()
-const { listByParticipant } = usePhotos()
 const { calc } = useScore()
+const { load } = useProfileData()
 
 const participant = ref<Participant | null>(null)
 const measurements = ref<MeasurementsByWeek>({})
@@ -29,25 +27,14 @@ const score = computed(() => {
   })
 })
 
-const weightSeries = computed(() =>
-  Object.values(measurements.value)
-    .filter((m): m is NonNullable<typeof m> => !!m)
-    .sort((a, b) => a.weekIndex - b.weekIndex)
-    .map(m => m.weight),
-)
-
 onMounted(async () => {
   participant.value = await getById(id.value)
   if (!participant.value) return
-  const [m, c, p] = await Promise.all([
-    listMeasures(participant.value.id),
-    countAll(participant.value.id),
-    listByParticipant(participant.value.id),
-  ])
-  measurements.value = m
-  workoutDays.value = c.workoutDays
-  dietDays.value = c.dietDays
-  photoDays.value = Object.keys(p).length
+  const data = await load(participant.value)
+  measurements.value = data.measurements
+  workoutDays.value = data.workoutDays
+  dietDays.value = data.dietDays
+  photoDays.value = data.photoDays
 })
 </script>
 
@@ -65,20 +52,15 @@ onMounted(async () => {
       <div class="text-xs text-[var(--accent)] mono mb-2">// PARTICIPANT PROFILE</div>
       <h1 class="display-font text-5xl mb-6">{{ participant.name }}</h1>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-4">
-          <MeasureBlock :measurements="measurements" :editable="false" />
-          <div v-if="weightSeries.length >= 2" class="card p-5">
-            <div class="mono text-xs text-[var(--text-dim)] uppercase tracking-wider mb-2">
-              體重趨勢
-            </div>
-            <Sparkline :values="weightSeries" :width="300" :height="80" />
-          </div>
-        </div>
-        <div v-if="score">
-          <ScoreBreakdown :score="score" />
-        </div>
-      </div>
+      <ProfileView
+        v-if="score"
+        :measurements="measurements"
+        :workout-days="workoutDays"
+        :diet-days="dietDays"
+        :photo-days="photoDays"
+        :score="score"
+        :editable="false"
+      />
     </div>
   </div>
 </template>

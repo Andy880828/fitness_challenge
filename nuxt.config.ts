@@ -10,6 +10,12 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
   ],
 
+  // 元件 auto-import：扁平命名，不依目錄加 prefix。
+  // 例如 app/components/auth/LoginForm.vue 註冊為 <LoginForm />（而非 <AuthLoginForm />）
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
+
   typescript: {
     strict: true,
     typeCheck: false,
@@ -30,6 +36,7 @@ export default defineNuxtConfig({
         { name: 'description', content: '12週減脂增肌挑戰賽，男女組獨立排行榜，公開即時計分' },
       ],
       link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
@@ -42,6 +49,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    cronSecret: process.env.CRON_SECRET,
     logLevel: process.env.NUXT_LOG_LEVEL || 'info',
     logRetentionDays: Number(process.env.NUXT_LOG_RETENTION_DAYS || 30),
     public: {
@@ -51,6 +59,9 @@ export default defineNuxtConfig({
   },
 
   supabase: {
+    url: process.env.NUXT_PUBLIC_SUPABASE_URL,
+    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     redirect: false, // 由 app/middleware/auth.ts 自行處理重導
   },
 })

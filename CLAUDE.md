@@ -139,6 +139,50 @@ const { participants, refresh } = await useParticipants()
 - 所有 API 回應、composable 回傳必須有明確 TS 介面
 - 從 `shared/types/database.ts` 引用 supabase 生成型別
 
+### 6. auth layout 與 Profile 共用層
+
+- `app/layouts/auth.vue` — 「需登入 + 需報名」頁面（dashboard / checkin）共用骨架
+  - 內含 AppHeader / AppFooter
+  - 透過 `provideParticipantContext()` 提供 participant ref 給內部頁面
+  - 統一渲染「載入中」「尚未報名請先 /register」error UI
+- `app/composables/useParticipantContext.ts` — provide/inject pair
+  - layout 端 `provideParticipantContext()`；page 端 `useParticipantContext()`
+  - 不在 auth layout 內呼叫會 throw（防止誤用）
+- `app/components/profile/ProfileView.vue` — dashboard 與 profile/[id] 共用
+  - props：`measurements / counts / score / editable`
+  - `editable=true` 時顯示三張 StatCard + 可編輯 MeasureBlock
+- `app/composables/useProfileData.ts` — 並行抓 measure / checkin / photo + 算 score
+
+頁面套用方式：
+
+```ts
+// dashboard.vue / checkin.vue
+definePageMeta({ middleware: 'auth', layout: 'auth' })
+
+const { participant } = useParticipantContext()  // 由 auth layout 提供
+```
+
+### 7. Header AuthMenu 與動態導覽
+
+- `app/components/layout/AuthMenu.vue` — 右側登入/登出/使用者 email 顯示
+- `AppHeader.vue` 的 `navItems` 為 computed：
+  - 未登入 → 排行榜、規則
+  - 已登入 → 排行榜、每日打卡、我的儀表板、規則
+- 元件內部讀同一個 `useAuth().isAuthenticated` ref，登入/登出後 UI 自動切換無需重整。
+
+### 8. 元件命名慣例
+
+`nuxt.config.ts` 設 `components: [{ path: '~/components', pathPrefix: false }]`，
+所有 `app/components/**` 採**扁平命名**，不依目錄加 prefix。
+
+| 檔案路徑 | 註冊名稱 |
+|----------|---------|
+| `components/auth/LoginForm.vue` | `<LoginForm />`（**不是** `<AuthLoginForm />`） |
+| `components/profile/StatCard.vue` | `<StatCard />` |
+
+⚠️ 檔名必須**全域唯一**——若新增 `auth/Modal.vue` + `ui/Modal.vue` 同檔名，build 會 error。
+新增元件前先 `grep` 一下檔名是否衝突。
+
 ---
 
 ## 資料庫變更流程（雲端 Supabase）
@@ -257,20 +301,31 @@ $log.warn({ component: 'PhotoGrid' }, '圖片壓縮失敗，使用原圖')
 fitness_challenge/
 ├── app/                          # srcDir
 │   ├── app.vue
-│   ├── layouts/default.vue
+│   ├── layouts/
+│   │   ├── default.vue           # 公開頁面（leaderboard / login / register / rules）
+│   │   └── auth.vue              # 需登入 + 需報名頁面（dashboard / checkin）
 │   ├── pages/                    # 路由（file-based）
 │   │   ├── index.vue
 │   │   ├── leaderboard.vue
 │   │   ├── register.vue
 │   │   ├── login.vue
-│   │   ├── checkin.vue
-│   │   ├── dashboard.vue
+│   │   ├── checkin.vue           # uses layout: 'auth'
+│   │   ├── dashboard.vue         # uses layout: 'auth'
 │   │   ├── rules.vue
 │   │   └── profile/[id].vue
-│   ├── components/               # 按 feature 分子目錄
-│   │   ├── auth/    checkin/    layout/
-│   │   ├── leaderboard/  profile/  ui/
+│   ├── components/               # 按 feature 分子目錄；扁平註冊（pathPrefix: false）
+│   │   ├── auth/                 # LoginForm, RegisterForm
+│   │   ├── checkin/              # MonthCalendar, CheckinTile, PhotoUploadButton, PhotoGrid
+│   │   ├── layout/               # AppHeader, AppFooter, AuthMenu
+│   │   ├── leaderboard/          # LeaderboardTabs, LeaderboardTable, LeaderboardRow
+│   │   ├── profile/              # ProfileView (★ dashboard 與 profile/[id] 共用),
+│   │   │                           StatCard, MeasureBlock, ScoreBreakdown, Sparkline
+│   │   └── ui/                   # Badge, ProgressBar, PulseDot, Toggle, Lightbox
 │   ├── composables/              # 業務邏輯 hooks（auto-import）
+│   │   ├── useAuth.ts  useChallenge.ts  useParticipants.ts
+│   │   ├── useCheckins.ts  useMeasures.ts  usePhotos.ts  useScore.ts
+│   │   ├── useParticipantContext.ts   # ★ auth layout 注入點
+│   │   └── useProfileData.ts          # ★ dashboard / profile 共用資料抓取
 │   ├── middleware/auth.ts        # 路由守衛
 │   ├── plugins/                  # Nuxt plugins
 │   ├── assets/styles/            # tokens.css + main.css
@@ -299,8 +354,19 @@ fitness_challenge/
 │   └── middleware/log-requests.ts
 │
 ├── tests/
-│   ├── unit/  integration/  e2e/  fixtures/
-│   └── setup.ts
+│   ├── setup.ts                  # 全域 mock：#supabase/server, pino, image-compress;
+│   │                               stub Vue / Nitro auto-imports
+│   ├── stubs/supabase-server.ts  # #supabase/server alias 替身
+│   ├── fixtures/                 # participants / measurements / checkins
+│   ├── unit/
+│   │   ├── helpers/supabase-mock.ts   # createMockSupabase Proxy 工廠
+│   │   ├── composables/          # 9 spec：useAuth/useChallenge/.../useProfileData
+│   │   ├── components/           # AuthMenu.spec.ts
+│   │   └── utils/                # date / score / logger / image-compress
+│   ├── integration/api/          # 4 spec：register / photos-post / photos-delete / settings-get
+│   └── e2e/
+│       ├── helpers/auth.ts       # login() / hasTestCreds() / testEmail()
+│       └── 5 spec：auth-flow / login-flow / checkin-flow / leaderboard-flow / header-nav
 │
 ├── docs/                         # 設計文件
 │   ├── DATABASE.md  DEVELOPMENT.md
@@ -317,14 +383,39 @@ fitness_challenge/
 
 ## 部署 (Vercel)
 
-1. Vercel CLI 連結專案：`vercel link`
-2. 環境變數設定（在 Vercel Dashboard）：
-   - `NUXT_PUBLIC_SUPABASE_URL`
-   - `NUXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`（標記 Sensitive）
-   - `NUXT_PUBLIC_CHALLENGE_START_DATE`
-   - `NUXT_LOG_LEVEL=info`
-3. `vercel --prod` 或 push 到 main 自動觸發
+### 前置設定（一次性）
+
+1. `vercel link` 連結專案到 Vercel project（Hobby 即可）
+2. Vercel Dashboard → Settings → Environment Variables 設定（**每個都要選 Production / Preview / Development 三個 scope**）：
+
+| 變數 | 值 | Sensitive? |
+|------|-----|------------|
+| `NUXT_PUBLIC_SUPABASE_URL` | Supabase project URL | 否 |
+| `NUXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key | 否 |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key | **是** |
+| `CRON_SECRET` | 自產隨機字串（如 `openssl rand -hex 32`） | **是** |
+| `NUXT_PUBLIC_CHALLENGE_START_DATE` | `2026-05-07` 或實際開賽日 | 否 |
+| `NUXT_LOG_LEVEL` | `info`（production 建議） | 否 |
+
+3. 部署：`vercel --prod` 或 push 到 main 自動觸發
+
+### 防 Supabase 自動休眠
+
+Free tier 連續 7 天無流量 project 會 pause。`vercel.json` 已設 cron 每週一/週四 03:00 UTC 戳 `/api/cron/ping`，跑一次 `SELECT id FROM challenge_settings WHERE id=1`，重置 inactivity 計時器。
+
+- Cron 由 Vercel 自動帶 `Authorization: Bearer ${CRON_SECRET}` 觸發；endpoint 驗證 token，未授權回 401
+- 端點：`server/api/cron/ping.get.ts`
+- Schedule 最大間隔 4 天（週四 → 隔週一），離 7 天 pause 門檻有 3 天緩衝
+- 監看：Vercel Dashboard → Deployments → Functions → `/api/cron/ping` 的 invocation log
+
+### 部署前 checklist
+
+- [ ] `pnpm typecheck` exit 0
+- [ ] `pnpm test:unit && pnpm test:integration` 全綠
+- [ ] `pnpm build` 本地成功（驗證 Nuxt 4 + nitro vercel preset）
+- [ ] 所有 env vars 在 Vercel Dashboard 設好（含 `CRON_SECRET`）
+- [ ] Supabase Dashboard 已套用 `docs/DATABASE.md` 的 schema + RLS + Storage bucket
+- [ ] `vercel.json` cron schedule 與 token 驗證已 commit
 
 ---
 
@@ -338,6 +429,10 @@ fitness_challenge/
 | 即時更新 | Polling / 手動 refresh | Realtime WebSocket | 12 週活動規模不需要 |
 | Logger | pino + pino-roll | winston, console | 效能最佳、serverless 友善 |
 | 計分公式 | shared/utils/score.ts | DB function | 可隨時調整、不需 migration；client + server 共用 |
+| 元件 auto-import | `pathPrefix: false` 扁平命名 | 預設目錄 prefix（`AuthLoginForm`） | 小專案檔名已唯一；扁平名閱讀更直覺 |
+| auth layout | provide/inject 共用 participant | 各頁自抓 | 消除 dashboard / checkin 的重複載入邏輯與 error UI |
+| Profile 共用 | ProfileView + useProfileData | dashboard 與 profile/[id] 各自寫一份 | 兩頁原本 70% 重複；抽出後修一處兩頁同步 |
+| 防 Supabase pause | Vercel Cron 戳 `/api/cron/ping`（週一/四） | GitHub Actions / Supabase pg_cron / 真實流量 | 與部署平台同管道、無需額外 repo；pg_cron 在 pause 後自己也停（反向死鎖） |
 
 ---
 
@@ -349,4 +444,4 @@ fitness_challenge/
 - [ ] 社群留言 / 互相加油
 - [ ] iOS / Android PWA
 - [ ] 補上 supabase/migrations/*.sql（目前 schema 在 docs/DATABASE.md）
-- [ ] integration / e2e 測試補齊
+- [x] ~~integration / e2e 測試補齊~~（unit 72 / integration 19 已完成；E2E 5 spec 待 Supabase 測試 project 啟用）

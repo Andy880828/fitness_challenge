@@ -1,11 +1,13 @@
 import { defineConfig } from 'vitest/config'
 import { fileURLToPath } from 'node:url'
+import vue from '@vitejs/plugin-vue'
 
 // Nuxt 4 結構：
 // - `~` / `@` → app/   (client code, 含 components, composables, pages, utils)
 // - `~~` / `@@` → rootDir
 // - `#shared` → shared/ (純 TS，client + server 共用)
 export default defineConfig({
+  plugins: [vue()],
   test: {
     globals: true,
     environment: 'happy-dom',
@@ -31,6 +33,7 @@ export default defineConfig({
       '~~': fileURLToPath(new URL('./', import.meta.url)),
       '@@': fileURLToPath(new URL('./', import.meta.url)),
       '#shared': fileURLToPath(new URL('./shared/', import.meta.url)),
+      '#supabase/server': fileURLToPath(new URL('./tests/stubs/supabase-server.ts', import.meta.url)),
     },
   },
 })

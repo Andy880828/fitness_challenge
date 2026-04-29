@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { todayStr } from '#shared/utils/date'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'auth' })
 useHead({ title: '每日打卡 · 減脂增肌挑戰賽' })
 
-const { getMine } = useParticipants()
+const { participant } = useParticipantContext()
 const { listRange, toggle } = useCheckins()
 const { listByParticipant, upload, remove } = usePhotos()
 const { settings } = useChallenge()
 
-const participant = ref<Awaited<ReturnType<typeof getMine>>>(null)
 const selectedDate = ref<string>(todayStr())
 const checkinsMap = ref<Record<string, { workout: boolean; diet: boolean }>>({})
 const photosMap = ref<Record<string, Awaited<ReturnType<typeof listByParticipant>>[string]>>({})
@@ -34,14 +33,9 @@ const reload = async () => {
   photosMap.value = p
 }
 
-onMounted(async () => {
-  participant.value = await getMine()
-  if (!participant.value) {
-    error.value = '尚未報名，請先到 /register 完成報名'
-    return
-  }
-  await reload()
-})
+watch(participant, (p) => {
+  if (p) reload()
+}, { immediate: true })
 
 watch([year, month], reload)
 
@@ -53,7 +47,6 @@ const onToggle = async (field: 'workout' | 'diet') => {
   busy.value = true
   const next = !todaysState.value[field]
   const prev = checkinsMap.value
-  // 樂觀更新
   checkinsMap.value = {
     ...prev,
     [selectedDate.value]: { ...todaysState.value, [field]: next },

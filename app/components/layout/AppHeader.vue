@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { TOTAL_DAYS } from '#shared/utils/constants'
 import { dayDiff, todayStr } from '#shared/utils/date'
+import AuthMenu from './AuthMenu.vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
+const { isAuthenticated } = useAuth()
 
 const startDate = config.public.challengeStartDate
 const today = todayStr()
@@ -12,13 +14,26 @@ const day = computed(() =>
 )
 const pct = computed(() => Math.min(100, (day.value / TOTAL_DAYS) * 100))
 
-const navItems = [
+interface NavItem {
+  to: string
+  label: string
+}
+
+const publicNav: readonly NavItem[] = [
+  { to: '/leaderboard', label: '排行榜' },
+  { to: '/rules', label: '規則' },
+]
+
+const authedNav: readonly NavItem[] = [
   { to: '/leaderboard', label: '排行榜' },
   { to: '/checkin', label: '每日打卡' },
   { to: '/dashboard', label: '我的儀表板' },
-  { to: '/register', label: '報名' },
   { to: '/rules', label: '規則' },
-] as const
+]
+
+const navItems = computed<readonly NavItem[]>(() =>
+  isAuthenticated.value ? authedNav : publicNav,
+)
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')
 </script>
@@ -42,21 +57,25 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(to +
           </span>
         </NuxtLink>
 
-        <nav class="flex gap-1 text-sm flex-wrap">
-          <NuxtLink
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            class="px-4 py-2 border-b-2 border-transparent transition-colors hover:text-[var(--accent)]"
-            :class="
-              isActive(item.to)
-                ? 'text-[var(--accent)] border-b-[var(--accent)]'
-                : 'text-[var(--text-dim)]'
-            "
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </nav>
+        <div class="flex items-center gap-4 flex-wrap">
+          <nav class="flex gap-1 text-sm flex-wrap" data-testid="main-nav">
+            <NuxtLink
+              v-for="item in navItems"
+              :key="item.to"
+              :to="item.to"
+              class="px-4 py-2 border-b-2 border-transparent transition-colors hover:text-[var(--accent)]"
+              :class="
+                isActive(item.to)
+                  ? 'text-[var(--accent)] border-b-[var(--accent)]'
+                  : 'text-[var(--text-dim)]'
+              "
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </nav>
+
+          <AuthMenu />
+        </div>
       </div>
 
       <div class="mt-3 progress-bar">
