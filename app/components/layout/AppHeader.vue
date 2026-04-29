@@ -43,27 +43,27 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(to +
     class="border-b border-[var(--border)] sticky top-0 z-50 backdrop-blur"
     style="background: rgba(10, 10, 10, 0.85)"
   >
-    <div class="max-w-7xl mx-auto px-6 py-4">
-      <div class="flex items-center justify-between flex-wrap gap-4">
-        <NuxtLink to="/" class="flex items-center gap-4">
-          <span class="pulse-dot" />
-          <span>
-            <span class="display-font text-2xl tracking-wider block">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <div class="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
+        <NuxtLink to="/" class="flex items-center gap-3 sm:gap-4">
+          <span class="pulse-dot shrink-0" />
+          <span class="min-w-0">
+            <span class="display-font text-lg sm:text-2xl tracking-wider block">
               減脂增肌 / FORGE
             </span>
-            <span class="text-xs text-[var(--text-dim)] mono block">
-              12-WEEK CHALLENGE · DAY {{ day }}/{{ TOTAL_DAYS }}
+            <span class="text-[0.65rem] sm:text-xs text-[var(--text-dim)] mono block">
+              DAY {{ day }}/{{ TOTAL_DAYS }}
             </span>
           </span>
         </NuxtLink>
 
-        <div class="flex items-center gap-4 flex-wrap">
-          <nav class="flex gap-1 text-sm flex-wrap" data-testid="main-nav">
+        <div class="flex items-center gap-2 sm:gap-4 flex-wrap">
+          <nav class="flex gap-0.5 sm:gap-1 text-xs sm:text-sm flex-wrap" data-testid="main-nav">
             <NuxtLink
               v-for="item in navItems"
               :key="item.to"
               :to="item.to"
-              class="px-4 py-2 border-b-2 border-transparent transition-colors hover:text-[var(--accent)]"
+              class="px-2 sm:px-4 py-2 border-b-2 border-transparent transition-colors hover:text-[var(--accent)]"
               :class="
                 isActive(item.to)
                   ? 'text-[var(--accent)] border-b-[var(--accent)]'
@@ -78,7 +78,7 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(to +
         </div>
       </div>
 
-      <div class="mt-3 progress-bar">
+      <div class="mt-2 sm:mt-3 progress-bar">
         <div class="progress-fill" :style="{ width: `${pct}%` }" />
       </div>
     </div>

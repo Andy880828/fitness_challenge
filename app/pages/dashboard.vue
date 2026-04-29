@@ -58,10 +58,10 @@ const onSaveMeasure = async (
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-6 py-10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
     <div class="mb-6">
       <div class="text-xs text-[var(--accent)] mono mb-2">// MY DASHBOARD</div>
-      <h1 class="display-font text-5xl">{{ participant?.name ?? '儀表板' }}</h1>
+      <h1 class="display-font text-3xl md:text-5xl break-words">{{ participant?.name ?? '儀表板' }}</h1>
     </div>
 
     <p v-if="error" class="mono text-sm text-[var(--accent-2)] mb-4">{{ error }}</p>

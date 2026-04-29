@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@nuxtjs/tailwindcss',
     '@nuxt/eslint',
+    '@vueuse/motion/nuxt',
   ],
 
   // 元件 auto-import：扁平命名，不依目錄加 prefix。

@@ -57,8 +57,8 @@ const save = () => {
           <input v-model.number="draftFat" type="number" step="0.1" placeholder="體脂 %" class="input text-sm">
           <input v-model.number="draftMuscle" type="number" step="0.1" placeholder="肌肉 kg" class="input text-sm">
           <div class="flex gap-2">
-            <button type="button" class="btn-primary px-2 py-1 rounded text-xs flex-1" @click="save">存</button>
-            <button type="button" class="btn-ghost px-2 py-1 rounded text-xs flex-1" @click="cancel">取消</button>
+            <button type="button" class="btn-primary px-3 py-2 rounded text-xs flex-1" @click="save">存</button>
+            <button type="button" class="btn-ghost px-3 py-2 rounded text-xs flex-1" @click="cancel">取消</button>
           </div>
         </div>
       </template>
@@ -81,7 +81,7 @@ const save = () => {
         <button
           v-if="editable"
           type="button"
-          class="btn-ghost w-full mt-3 px-2 py-1 rounded text-xs"
+          class="btn-ghost w-full mt-3 px-3 py-2 rounded text-xs"
           @click="startEdit(idx as WeekIndex)"
         >
           {{ measurements[idx as WeekIndex] ? '編輯' : '填寫' }}

@@ -39,7 +39,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-6 py-10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
     <NuxtLink to="/leaderboard" class="btn-ghost px-3 py-1 rounded text-xs">
       ← 回排行榜
     </NuxtLink>
@@ -50,7 +50,7 @@ onMounted(async () => {
 
     <div v-else class="mt-4">
       <div class="text-xs text-[var(--accent)] mono mb-2">// PARTICIPANT PROFILE</div>
-      <h1 class="display-font text-5xl mb-6">{{ participant.name }}</h1>
+      <h1 class="display-font text-3xl md:text-5xl mb-6 break-words">{{ participant.name }}</h1>
 
       <ProfileView
         v-if="score"

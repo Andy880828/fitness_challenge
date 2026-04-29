@@ -30,10 +30,9 @@ const path = computed(() => {
 
 <template>
   <svg
-    :width="width"
-    :height="height"
     :viewBox="`0 0 ${width} ${height}`"
-    class="overflow-visible"
+    class="block w-full h-auto overflow-visible"
+    :style="{ maxWidth: `${width}px`, aspectRatio: `${width} / ${height}` }"
   >
     <path
       v-if="path"

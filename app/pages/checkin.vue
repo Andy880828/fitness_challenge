@@ -104,9 +104,9 @@ const nextMonth = () => {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-6 py-10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
     <div class="text-xs text-[var(--accent)] mono mb-2">// CHECK-IN</div>
-    <h1 class="display-font text-4xl mb-6">每日打卡</h1>
+    <h1 class="display-font text-3xl md:text-4xl mb-6">每日打卡</h1>
 
     <p v-if="error" class="mono text-sm text-[var(--accent-2)] mb-4">{{ error }}</p>
 
@@ -157,7 +157,7 @@ const nextMonth = () => {
           <div class="mono text-[0.65rem] uppercase tracking-wider text-[var(--text-dim)] mb-2">
             飲食照片
           </div>
-          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             <PhotoUploadButton :disabled="busy" @select="onPhotoSelect" />
             <div
               v-for="p in todaysPhotos"
@@ -169,7 +169,7 @@ const nextMonth = () => {
               </button>
               <button
                 type="button"
-                class="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 text-xs opacity-0 group-hover:opacity-100"
+                class="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 text-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center justify-center"
                 @click.stop="onPhotoDelete(p.id)"
               >×</button>
             </div>

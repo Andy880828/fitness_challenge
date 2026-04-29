@@ -84,15 +84,21 @@ const filtered = computed(() => {
       尚無參賽者
     </div>
     <div v-else class="space-y-2">
-      <LeaderboardRow
+      <div
         v-for="(row, idx) in filtered"
         :key="row.participant.id"
-        :rank="idx + 1"
-        :participant-id="row.participant.id"
-        :name="row.participant.name"
-        :gender="row.participant.gender"
-        :score="row.score"
-      />
+        v-motion
+        :initial="{ opacity: 0, y: 16 }"
+        :visible-once="{ opacity: 1, y: 0, transition: { delay: idx * 40, duration: 300 } }"
+      >
+        <LeaderboardRow
+          :rank="idx + 1"
+          :participant-id="row.participant.id"
+          :name="row.participant.name"
+          :gender="row.participant.gender"
+          :score="row.score"
+        />
+      </div>
     </div>
   </div>
 </template>

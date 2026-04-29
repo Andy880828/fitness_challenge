@@ -20,12 +20,19 @@ const colorClass = computed(() => {
 <template>
   <button
     type="button"
-    class="card p-5 text-center w-full transition-all"
-    :class="[colorClass, disabled ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5']"
+    class="card p-5 text-center w-full transition-all duration-200 active:scale-[0.97]"
+    :class="[
+      colorClass,
+      disabled ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5',
+      active && variant === 'workout' ? 'glow-accent' : '',
+      active && variant === 'diet' ? 'glow-warn' : '',
+    ]"
     :disabled="disabled"
     @click="emit('toggle')"
   >
-    <div class="text-3xl mb-2">{{ icon ?? (active ? '✓' : '·') }}</div>
+    <div class="text-3xl mb-2 transition-transform" :class="{ 'scale-110': active }">
+      {{ icon ?? (active ? '✓' : '·') }}
+    </div>
     <div class="mono text-xs uppercase tracking-wider">{{ label }}</div>
   </button>
 </template>

@@ -46,7 +46,12 @@ const onSubmit = async () => {
     <p v-if="error" class="mono text-xs text-[var(--accent-2)]">
       {{ error }}
     </p>
-    <button type="submit" class="btn-primary w-full py-3 rounded mono" :disabled="loading">
+    <button
+      type="submit"
+      class="btn-primary w-full py-3 rounded mono"
+      :class="{ 'btn-loading': loading }"
+      :disabled="loading"
+    >
       {{ loading ? '登入中...' : 'LOG IN' }}
     </button>
     <div class="text-center text-xs text-[var(--text-dim)]">

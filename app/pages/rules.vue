@@ -9,10 +9,10 @@ const measureDays = computed(() => measureDates(settings.value.startDate))
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-10 space-y-6">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10 space-y-6">
     <div>
       <div class="text-xs text-[var(--accent)] mono mb-2">// RULES & SCORING</div>
-      <h1 class="display-font text-5xl">活動規則</h1>
+      <h1 class="display-font text-3xl md:text-5xl">活動規則</h1>
     </div>
 
     <section class="card p-6 space-y-3">

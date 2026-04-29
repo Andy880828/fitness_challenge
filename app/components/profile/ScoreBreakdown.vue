@@ -6,6 +6,17 @@ interface Props {
 }
 const props = defineProps<Props>()
 
+const totalTarget = computed(() => props.score.total)
+const totalDisplay = useCountUp(totalTarget, { duration: 900, decimals: 1 })
+
+// 進度條 mount 後才填寬度，讓 CSS transition 觸發 0→value 動畫
+const mounted = ref(false)
+onMounted(() => {
+  requestAnimationFrame(() => {
+    mounted.value = true
+  })
+})
+
 const rows = computed(() => [
   {
     label: '減脂 (40%)',
@@ -32,18 +43,18 @@ const rows = computed(() => [
 </script>
 
 <template>
-  <div class="card p-5">
+  <div class="card card-hover p-5">
     <div class="flex items-baseline justify-between mb-4">
       <div class="mono text-xs uppercase tracking-wider text-[var(--text-dim)]">
         綜合分數
       </div>
-      <div class="display-font text-5xl text-[var(--accent)]">
-        {{ score.total.toFixed(1) }}
+      <div class="display-font text-4xl md:text-5xl text-[var(--accent)] glow-accent tabular-nums">
+        {{ totalDisplay }}
       </div>
     </div>
 
     <div class="space-y-3">
-      <div v-for="row in rows" :key="row.label">
+      <div v-for="(row, idx) in rows" :key="row.label">
         <div class="flex justify-between text-xs mono mb-1">
           <span class="text-[var(--text-dim)]">{{ row.label }}</span>
           <span :style="{ color: row.color }">
@@ -54,7 +65,12 @@ const rows = computed(() => [
         <div class="progress-bar">
           <div
             class="progress-fill"
-            :style="{ width: `${Math.min(100, Math.max(0, row.value))}%`, background: row.color }"
+            :style="{
+              width: mounted ? `${Math.min(100, Math.max(0, row.value))}%` : '0%',
+              background: row.color,
+              transitionDelay: `${100 + idx * 80}ms`,
+              transitionDuration: '700ms',
+            }"
           />
         </div>
       </div>

@@ -99,7 +99,7 @@ const onSubmit = async () => {
 
     <div class="border-t border-[var(--border)] pt-4">
       <div class="text-xs text-[var(--accent)] mono mb-2">// 初始 InBody (5/6)</div>
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label class="label">體重 kg *</label>
           <input v-model.number="weight" type="number" class="input" step="0.1" required>
@@ -120,6 +120,7 @@ const onSubmit = async () => {
     <button
       type="submit"
       class="btn-primary w-full py-3 rounded mono"
+      :class="{ 'btn-loading': loading }"
       :disabled="!isValid || loading"
     >
       {{ loading ? '建立中...' : 'JOIN CHALLENGE' }}

@@ -50,17 +50,17 @@ const dotsFor = (iso: string | null) => {
 </script>
 
 <template>
-  <div class="card p-4">
-    <div class="grid grid-cols-7 gap-1 mb-2 text-center mono text-xs text-[var(--text-dim)]">
+  <div class="card p-2 sm:p-4">
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 text-center mono text-[0.65rem] sm:text-xs text-[var(--text-dim)]">
       <div v-for="w in WEEKDAY_LABELS" :key="w">{{ w }}</div>
     </div>
-    <div class="grid grid-cols-7 gap-1">
+    <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
       <button
         v-for="(cell, i) in cells"
         :key="i"
         type="button"
         :disabled="!cell.inMonth"
-        class="aspect-square border rounded text-sm flex flex-col items-center justify-center relative transition-colors"
+        class="aspect-square border rounded text-xs sm:text-sm flex flex-col items-center justify-center relative transition-colors"
         :class="[
           cell.inMonth ? 'border-[var(--border)]' : 'border-transparent',
           selected === cell.iso ? 'border-[var(--accent)] bg-[var(--accent)]/5' : '',
@@ -71,18 +71,18 @@ const dotsFor = (iso: string | null) => {
         <span v-if="cell.day" :class="cell.inMonth ? '' : 'opacity-30'">
           {{ cell.day }}
         </span>
-        <div v-if="cell.iso" class="flex gap-0.5 mt-1 h-1.5">
+        <div v-if="cell.iso" class="flex gap-0.5 mt-0.5 sm:mt-1 h-1 sm:h-1.5">
           <span
             v-if="dotsFor(cell.iso).workout"
-            class="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"
+            class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[var(--accent)]"
           />
           <span
             v-if="dotsFor(cell.iso).diet"
-            class="w-1.5 h-1.5 rounded-full bg-[var(--accent-2)]"
+            class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[var(--accent-2)]"
           />
           <span
             v-if="dotsFor(cell.iso).photo"
-            class="w-1.5 h-1.5 rounded-full bg-[var(--photo)]"
+            class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[var(--photo)]"
           />
         </div>
       </button>
