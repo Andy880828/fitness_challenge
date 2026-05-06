@@ -2,6 +2,8 @@
  * 認證 — 包裝 Supabase Auth 提供 signUp / signIn / signOut。
  * 註冊流程委派給 server/api/participants/register.post.ts，
  * 因為需要在同一 transaction 內建立 auth user + participants + measurements[0]。
+ *
+ * isAdmin: 跟著 user 變化自動從 participants 表載入 is_admin 狀態。
  */
 
 import type { ParticipantInsert, Participant } from '#shared/types/participant'
@@ -17,15 +19,33 @@ export interface RegisterPayload {
 export const useAuth = () => {
   const supabase = useSupabaseClient<any>()
   const user = useSupabaseUser()
+  const isAdmin = useState<boolean>('auth.isAdmin', () => false)
+
+  const refreshAdminFlag = async () => {
+    if (!user.value) {
+      isAdmin.value = false
+      return
+    }
+    const { data } = await supabase
+      .from('participants')
+      .select('is_admin')
+      .eq('user_id', user.value.id)
+      .maybeSingle()
+    isAdmin.value = data?.is_admin === true
+  }
+
+  watch(user, () => { void refreshAdminFlag() }, { immediate: true })
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return { data: null, error: error.message }
+    await refreshAdminFlag()
     return { data, error: null }
   }
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
+    isAdmin.value = false
     return { error: error?.message ?? null }
   }
 
@@ -42,6 +62,7 @@ export const useAuth = () => {
         email: payload.email,
         password: payload.password,
       })
+      await refreshAdminFlag()
       return { data, error: null }
     } catch (err) {
       const message =
@@ -54,5 +75,5 @@ export const useAuth = () => {
 
   const isAuthenticated = computed(() => !!user.value)
 
-  return { user, isAuthenticated, signIn, signOut, register }
+  return { user, isAuthenticated, isAdmin, signIn, signOut, register, refreshAdminFlag }
 }

@@ -5,7 +5,7 @@ import AuthMenu from './AuthMenu.vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, isAdmin } = useAuth()
 
 const startDate = config.public.challengeStartDate
 const today = todayStr()
@@ -31,9 +31,12 @@ const authedNav: readonly NavItem[] = [
   { to: '/rules', label: '規則' },
 ]
 
-const navItems = computed<readonly NavItem[]>(() =>
-  isAuthenticated.value ? authedNav : publicNav,
-)
+const adminNav: readonly NavItem[] = [{ to: '/admin', label: '管理中心' }]
+
+const navItems = computed<readonly NavItem[]>(() => {
+  if (!isAuthenticated.value) return publicNav
+  return isAdmin.value ? [...authedNav, ...adminNav] : authedNav
+})
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')
 </script>

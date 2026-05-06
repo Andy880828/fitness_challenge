@@ -25,6 +25,7 @@ export interface Database {
           height: number | null
           start_weight: number
           joined_at: string
+          is_admin: boolean
         }
         Insert: {
           id?: string
@@ -35,6 +36,7 @@ export interface Database {
           height?: number | null
           start_weight: number
           joined_at?: string
+          is_admin?: boolean
         }
         Update: Partial<Database['public']['Tables']['participants']['Insert']>
       }
@@ -59,8 +61,13 @@ export interface Database {
           workout: boolean
           diet: boolean
           updated_at: string
+          reviewed_at: string | null
+          reviewer_id: string | null
         }
-        Insert: Omit<Database['public']['Tables']['checkins']['Row'], 'updated_at'>
+        Insert: Omit<Database['public']['Tables']['checkins']['Row'], 'updated_at' | 'reviewed_at' | 'reviewer_id'> & {
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+        }
         Update: Partial<Database['public']['Tables']['checkins']['Insert']>
       }
       photos: {
@@ -78,6 +85,31 @@ export interface Database {
           uploaded_at?: string
         }
         Update: Partial<Database['public']['Tables']['photos']['Insert']>
+      }
+      admin_audit_log: {
+        Row: {
+          id: string
+          actor_user_id: string
+          action: string
+          target_table: string
+          target_id: string
+          before: Json | null
+          after: Json | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          actor_user_id: string
+          action: string
+          target_table: string
+          target_id: string
+          before?: Json | null
+          after?: Json | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['admin_audit_log']['Insert']>
       }
       challenge_settings: {
         Row: {
