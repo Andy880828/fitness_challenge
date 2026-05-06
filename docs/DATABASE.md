@@ -13,9 +13,10 @@
 5. [Storage Bucket 設定](#storage-bucket-設定)
 6. [輔助 RPC / Functions](#輔助-rpc--functions)
 7. [Seed Data（測試用）](#seed-data測試用)
-8. [本地開發 — Supabase CLI Migrations](#本地開發--supabase-cli-migrations)
+8. [Schema 變更流程（Dashboard SQL Editor）](#schema-變更流程dashboard-sql-editor)
 9. [型別生成](#型別生成)
-10. [安全檢查清單](#安全檢查清單)
+10. [Deprecated triggers / 已移除物件](#deprecated-triggers--已移除物件)
+11. [安全檢查清單](#安全檢查清單)
 
 ---
 
@@ -138,7 +139,7 @@ create table if not exists public.photos (
 create index if not exists idx_photos_participant_date on public.photos (participant_id, date);
 create index if not exists idx_photos_uploaded_at on public.photos (uploaded_at desc);
 
-comment on column public.photos.storage_path is 'Supabase Storage 內部路徑，刪 row 時須同步刪檔（trigger）';
+comment on column public.photos.storage_path is 'Supabase Storage 內部路徑；刪 row 前由應用層呼叫 Storage REST API 同步刪檔（不可用 SQL trigger）';
 
 -- ------------------------------------------------------------
 -- 5. challenge_settings (single row)
@@ -183,26 +184,18 @@ create trigger set_updated_at
   for each row execute function public.tg_set_updated_at();
 
 -- ------------------------------------------------------------
--- 7. 刪除照片 row 時自動刪除 Storage 檔
+-- 7. （已移除）刪除照片 row 時自動刪除 Storage 檔
 -- ------------------------------------------------------------
-create or replace function public.tg_delete_photo_storage()
-returns trigger
-language plpgsql
-security definer
-as $$
-begin
-  -- storage.objects 由 supabase-storage 維護
-  delete from storage.objects
-  where bucket_id = 'food-photos'
-    and name = old.storage_path;
-  return old;
-end;
-$$;
-
-drop trigger if exists delete_photo_storage on public.photos;
-create trigger delete_photo_storage
-  after delete on public.photos
-  for each row execute function public.tg_delete_photo_storage();
+-- 原本有 trigger delete_photo_storage / function tg_delete_photo_storage()
+-- 於 AFTER DELETE on public.photos 時 `delete from storage.objects ...`。
+-- Supabase 已禁止 SQL 對 storage.objects 做 DELETE（error 42501），trigger 一觸發
+-- 就讓整個 DELETE FROM photos rollback。
+--
+-- 現行做法：應用層 (server/api/{admin/,}photos/[id].delete.ts) 在 DELETE row
+-- 之前先呼叫 sb.storage.from(BUCKET).remove([path])，由 Storage REST API 處理。
+--
+-- 移除 SQL 見 supabase/migrations/20260507130000_drop_photo_storage_trigger.sql。
+-- 詳見下方「Deprecated triggers / 已移除物件」章節。
 ```
 
 ---
@@ -503,70 +496,51 @@ end $$;
 
 ---
 
-## 本地開發 — Supabase CLI Migrations
+## Schema 變更流程（Dashboard SQL Editor）
 
-### 安裝 CLI
+> 本專案目前**完全依賴雲端 Supabase Dashboard**，沒有本地 Docker、未連 Supabase CLI。
+> 以下是每次 schema 變更的標準流程：
 
-```bash
-# macOS / Linux
-brew install supabase/tap/supabase
+1. **新增 migration `.sql` 檔（純為留檔 / review）**
+   路徑：`supabase/migrations/<YYYYMMDDHHMMSS>_<description>.sql`
+   timestamp 用 UTC 14 碼整數即可，不需 CLI 產。
 
-# Windows (Scoop)
-scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-scoop install supabase
+2. **複製 SQL → Supabase Dashboard → SQL Editor → Run**
+   到對應位置（Tables / Triggers / Policies / Functions）目視確認結果。
 
-# 或用 npx（不建議長期使用）
-npx supabase --version
-```
+3. **若變更包含 schema column 異動 → 更新型別**
+   Dashboard 左側 → API Docs → 右上角「TypeScript」→ 複製整段，
+   手動覆蓋 `shared/types/database.ts`。
 
-### 初始化本地專案
+4. **commit `.sql`（必要時連同 `database.ts`）進 PR**
+   即使 SQL 是用 Dashboard 套用的，migration 檔仍是「我們對 schema 動過什麼」的單一事實來源；
+   將來若啟用 CLI（`db:link` / `db:push`）也能無縫接回。
 
-```bash
-cd C:/Users/Andy/Desktop/fitness_challenge
-supabase init
-supabase start                 # 啟動本地 Postgres + Studio
-```
+### CLI / 本地 Docker 模式（目前未啟用）
 
-啟動後會印出本地的 `API URL` / `anon key` / `service_role key`。將這三個值放到 `.env`（覆蓋 production 的值，本地開發專用）。
-
-### 建立 migration
-
-```bash
-supabase migration new init_schema
-# → 編輯 supabase/migrations/<timestamp>_init_schema.sql，貼入上方 [Schema 建表 SQL]
-
-supabase migration new rls_policies
-# → 貼入 [Row Level Security] SQL
-
-supabase migration new storage_setup
-# → 貼入 [Storage Bucket 設定] SQL
-
-supabase migration new rpc_functions
-# → 貼入 [輔助 RPC] SQL
-
-supabase db reset              # 套用所有 migrations 到本地
-```
-
-### 推送到雲端
-
-```bash
-supabase link --project-ref <your-project-ref>
-supabase db push               # 將 migrations 推到 Supabase 雲端專案
-```
+`package.json` 內 `supabase:start` / `db:reset:local` / `db:push` / `db:link` /
+`db:gen-types(:local)` 等 script **保留作為將來選項**，但目前未測試也未使用。
+啟用前需安裝 Docker Desktop 並登入 Supabase CLI（`pnpm dlx supabase login` + `pnpm db:link`）。
 
 ---
 
 ## 型別生成
 
-```bash
-# 從本地 supabase 生成 TypeScript 型別
-pnpm db:gen-types               # 對應 package.json 內的 supabase gen types
+目前路徑：**Dashboard → API Docs → TypeScript → 手動下載覆蓋 `shared/types/database.ts`**。
 
-# 從雲端專案生成
-supabase gen types typescript --project-id <ref> > types/database.ts
-```
+CLI 路徑（`pnpm db:gen-types`）目前未啟用，見上方說明。
 
-生成的 `types/database.ts` 會被 `@nuxtjs/supabase` 自動使用，提供完整型別檢查。
+`shared/types/database.ts` 會被 `@nuxtjs/supabase` 與專案各層 import，提供完整型別檢查。
+
+---
+
+## Deprecated triggers / 已移除物件
+
+| 物件 | 移除日期 | Migration | 原因 |
+|------|----------|-----------|------|
+| `public.delete_photo_storage()` + trigger `delete_photo_storage` on `public.photos` | 2026-05-07 | `supabase/migrations/20260507130000_drop_photo_storage_trigger.sql` | Supabase 已禁止 SQL 對 `storage.objects` 做 DELETE（error 42501）。Trigger 一觸發即讓整個 `DELETE FROM photos` rollback。應用層 (`server/api/{admin/,}photos/[id].delete.ts`) 已先呼叫 Storage REST API 移除物件，trigger 變成純多餘的破壞者，故移除。 |
+
+> 維護備忘：若未來想在 DB 層補一致性保證，正解是建一張 `pending_storage_deletes` 表 + cron + Edge Function 用 Storage REST 補刪，**不要**再寫直接動 `storage.objects` 的 trigger。
 
 ---
 

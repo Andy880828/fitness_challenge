@@ -31,21 +31,17 @@
 # 安裝依賴
 pnpm install
 
-# === 雲端 Supabase 模式（預設）===
-# 一次性：登入 + 連結雲端 project（從 Dashboard URL 取 project-ref）
-pnpm dlx supabase login
-pnpm db:link
-
-# 從雲端 schema 生成 TypeScript 型別（寫到 shared/types/database.ts）
-pnpm db:gen-types
-
-# Schema 變更：在 supabase/migrations/ 新增 .sql 後 push 到雲端
-pnpm db:push
-
-# === 本地 Docker 模式（選用，整合測試 / 離線開發）===
-pnpm supabase:start              # 啟動本地 Postgres + Auth + Storage
-pnpm db:reset:local              # 套用 migrations 到本地 DB
-pnpm db:gen-types:local          # 從本地 schema 產 types
+# === Supabase（雲端 Dashboard，目前唯一啟用路徑）===
+# 本專案 **完全依賴雲端 Supabase**，沒有本地 Docker、也未接通 Supabase CLI。
+#   - Schema 變更：寫 supabase/migrations/<timestamp>_<desc>.sql → 複製內容到
+#                 Supabase Dashboard → SQL Editor → Run
+#   - 型別更新：Dashboard → API Docs → TypeScript → 下載後手動覆蓋
+#              shared/types/database.ts
+#
+# 以下 CLI 指令 **目前未啟用**（package.json 仍保留作為將來選項）：
+#   pnpm dlx supabase login / pnpm db:link
+#   pnpm db:push / pnpm db:gen-types
+#   pnpm supabase:start / pnpm db:reset:local / pnpm db:gen-types:local
 
 # === 通用 ===
 pnpm dev                          # http://localhost:3000
@@ -185,40 +181,32 @@ const { participant } = useParticipantContext()  // 由 auth layout 提供
 
 ---
 
-## 資料庫變更流程（雲端 Supabase）
+## 資料庫變更流程（雲端 Supabase Dashboard）
 
-**所有 schema 變更必須透過 migration**，不可在 Supabase Studio UI 直接改後忘了同步——
-否則本地產出的 types 會與雲端真實 schema drift。
-
-### 初次 setup（每位開發者一次）
-
-```bash
-pnpm dlx supabase login          # 用瀏覽器授權 CLI
-pnpm db:link                     # 互動模式輸入 Dashboard 上的 project-ref
-```
+> 本專案沒有本地 Docker、未啟用 Supabase CLI。所有 schema 變更走 **Dashboard SQL Editor**。
 
 ### 一般變更流程
 
-```bash
-# 1. 建立新 migration
-supabase migration new <description>
+1. **新增 migration 檔（純為留檔 / review）**
+   `supabase/migrations/<YYYYMMDDHHMMSS>_<description>.sql`
+   檔名 timestamp 用 UTC 整數 14 碼即可，不需 CLI 產。
 
-# 2. 編輯 supabase/migrations/<timestamp>_<description>.sql
+2. **複製 SQL → Supabase Dashboard → SQL Editor → Run**
+   執行後到對應位置（Tables / Triggers / Policies / Functions）目視確認結果。
 
-# 3.（選用）若有 Docker，本地先測 — 沒有就跳過
-pnpm supabase:start
-pnpm db:reset:local
+3. **若變更包含 schema column 異動 → 更新型別**
+   Dashboard → 左側 API Docs → 右上角「TypeScript」→ 複製整段，
+   手動覆蓋 `shared/types/database.ts`。
+   （**不要跑 `pnpm db:gen-types`**，CLI 未連線。）
 
-# 4. Push 到雲端
-pnpm db:push
+4. **commit migration `.sql` + 必要時的 `database.ts` 一起進 PR**
+   migration 檔即使沒透過 CLI 套用，仍是「我們對 schema 動過什麼」的單一事實來源。
 
-# 5. 從雲端最新 schema 產 types
-pnpm db:gen-types
-```
+### Migration 檔仍要寫的理由
 
-**緊急 hotfix（不走 migration，直接在 Dashboard SQL Editor 改）**——
-事後**務必**補一個 migration 對應該變更，並在下個 PR 把 `pnpm db:gen-types` 結果一併 commit，
-否則別人 reset 時會缺那條變更。
+- 變更歷史可追、PR 可 review
+- 將來若啟用 Supabase CLI（`db:link` / `db:push`），可直接補跑而不會打架
+- 失敗回滾時知道要 revert 哪一段 SQL
 
 完整 schema 與 RLS 政策見 [docs/DATABASE.md](./docs/DATABASE.md)。
 

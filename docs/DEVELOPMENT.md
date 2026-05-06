@@ -1,6 +1,6 @@
 # Development Guide — Nuxt 4 + Supabase
 
-## 本地啟動（雲端 Supabase 模式 — 推薦）
+## 本地啟動（雲端 Supabase Dashboard 模式 — 目前唯一啟用）
 
 ```bash
 # 1. 安裝依賴
@@ -20,37 +20,18 @@ cp .env.example .env
 # 4. 在 Supabase Dashboard → SQL Editor 套用 docs/DATABASE.md 內 SQL
 #    （建表、RLS、Storage bucket 一次完成）
 
-# 5. (選擇性) 連結 CLI 與雲端 project，之後可從 schema 自動產 types
-pnpm dlx supabase login              # 一次性、用瀏覽器授權
-pnpm db:link                          # 互動模式輸入 project-ref（從 Dashboard URL 取得）
-pnpm db:gen-types                     # 對著雲端 schema 產 shared/types/database.ts
-
-# 6. 啟動 Nuxt dev server
+# 5. 啟動 Nuxt dev server
 pnpm dev   # http://localhost:3000
 ```
 
-> **取得 project-ref**：Supabase Dashboard URL `https://supabase.com/dashboard/project/<這串就是>` —— 通常是 20 字元的英數字串。
+> 型別 (`shared/types/database.ts`) 透過 Dashboard → API Docs → TypeScript 下載後手動覆蓋；CLI 路徑（`pnpm db:gen-types`）目前未啟用。
 
-## 本地啟動（本地 Docker 模式 — 選用，整合測試或離線開發時）
+## 本地啟動（本地 Docker / Supabase CLI 模式 — 目前未啟用）
 
-需要先安裝 [Docker Desktop](https://www.docker.com/products/docker-desktop/)。
-
-```bash
-# 1. 一次性初始化（建立 supabase/ + config.toml）
-supabase init
-
-# 2. 啟動本地 Supabase 全套（Postgres + Auth + Storage + Studio）
-pnpm supabase:start
-# Terminal 會直接印 URL + anon key + service_role key + DB URL
-
-# 3. 把這些值填到 .env（取代雲端值，或建另一份 .env.local）
-# 4. 套用 schema
-pnpm db:reset:local
-# 5. 產 types
-pnpm db:gen-types:local
-# 6. 啟動
-pnpm dev
-```
+> 本專案目前完全使用雲端 Supabase Dashboard。以下流程列為將來選項，啟用前
+> 需另外安裝 [Docker Desktop](https://www.docker.com/products/docker-desktop/) 並登入 Supabase CLI。
+> `package.json` 內的 `supabase:start` / `db:reset:local` / `db:push` / `db:link` /
+> `db:gen-types(:local)` 等 script 暫時保留但未測試。
 
 ---
 
@@ -414,8 +395,8 @@ curl -i https://your-app.vercel.app/api/cron/ping
 
 當 supabase schema 變動：
 
-1. 跑 `pnpm db:reset` 套用最新 migrations
-2. 跑 `pnpm db:gen-types`（會覆寫 `shared/types/database.ts`）
+1. 把對應 `supabase/migrations/<ts>_<desc>.sql` 內容貼到 Supabase Dashboard → SQL Editor → Run
+2. Dashboard → API Docs → TypeScript → 複製整段，手動覆蓋 `shared/types/database.ts`
 3. 跑 `pnpm typecheck` —— 任何因型別變動而壞掉的程式碼會在這裡被抓出
 
 ---
