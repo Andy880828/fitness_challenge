@@ -2,7 +2,7 @@
 import type { CheckinsByDate } from '#shared/types/checkin'
 import type { PhotosByDate } from '#shared/types/photo'
 import { WEEKDAY_LABELS } from '#shared/utils/constants'
-import { measureDates } from '#shared/utils/date'
+import { measureDates, todayStr } from '#shared/utils/date'
 
 interface Props {
   year: number
@@ -16,24 +16,31 @@ const props = defineProps<Props>()
 const emit = defineEmits<{ select: [date: string] }>()
 
 const measureSet = computed(() => new Set(measureDates(props.startDate)))
+const today = computed(() => todayStr())
 
 interface Cell {
   iso: string | null
   day: number | null
   inMonth: boolean
+  isFuture: boolean
 }
 
 const cells = computed<Cell[]>(() => {
   const first = new Date(Date.UTC(props.year, props.month - 1, 1))
   const startWeekday = first.getUTCDay()
   const daysInMonth = new Date(Date.UTC(props.year, props.month, 0)).getUTCDate()
+  const todayIso = today.value
   const result: Cell[] = []
-  for (let i = 0; i < startWeekday; i += 1) result.push({ iso: null, day: null, inMonth: false })
+  for (let i = 0; i < startWeekday; i += 1) {
+    result.push({ iso: null, day: null, inMonth: false, isFuture: false })
+  }
   for (let d = 1; d <= daysInMonth; d += 1) {
     const iso = `${props.year}-${String(props.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    result.push({ iso, day: d, inMonth: true })
+    result.push({ iso, day: d, inMonth: true, isFuture: iso > todayIso })
   }
-  while (result.length % 7 !== 0) result.push({ iso: null, day: null, inMonth: false })
+  while (result.length % 7 !== 0) {
+    result.push({ iso: null, day: null, inMonth: false, isFuture: false })
+  }
   return result
 })
 
@@ -47,6 +54,11 @@ const dotsFor = (iso: string | null) => {
     measure: measureSet.value.has(iso),
   }
 }
+
+const onClickCell = (cell: Cell) => {
+  if (!cell.iso || cell.isFuture) return
+  emit('select', cell.iso)
+}
 </script>
 
 <template>
@@ -59,14 +71,17 @@ const dotsFor = (iso: string | null) => {
         v-for="(cell, i) in cells"
         :key="i"
         type="button"
-        :disabled="!cell.inMonth"
-        class="aspect-square border rounded text-xs sm:text-sm flex flex-col items-center justify-center relative transition-colors"
+        :disabled="!cell.inMonth || cell.isFuture"
+        class="aspect-square rounded text-xs sm:text-sm flex flex-col items-center justify-center relative transition-colors border-2"
         :class="[
-          cell.inMonth ? 'border-[var(--border)]' : 'border-transparent',
-          selected === cell.iso ? 'border-[var(--accent)] bg-[var(--accent)]/5' : '',
-          dotsFor(cell.iso).measure ? 'ring-1 ring-[var(--photo)]' : '',
+          cell.inMonth ? 'border-transparent' : 'border-transparent',
+          cell.isFuture ? 'opacity-40 cursor-not-allowed' : '',
+          cell.iso === startDate ? 'ring-2 ring-[var(--photo)]' : '',
+          cell.iso === today ? 'ring-2 ring-[var(--today)]' : '',
+          selected === cell.iso ? '!border-[var(--selected)] bg-[var(--selected)]/10' : '',
+          dotsFor(cell.iso).measure ? 'ring-1 ring-[var(--text-dim)]/40' : '',
         ]"
-        @click="cell.iso && emit('select', cell.iso)"
+        @click="onClickCell(cell)"
       >
         <span v-if="cell.day" :class="cell.inMonth ? '' : 'opacity-30'">
           {{ cell.day }}
@@ -86,6 +101,25 @@ const dotsFor = (iso: string | null) => {
           />
         </div>
       </button>
+    </div>
+
+    <div class="mono text-[0.6rem] sm:text-[0.65rem] text-[var(--text-dim)] mt-3 flex flex-wrap gap-x-3 gap-y-1 justify-center">
+      <span class="flex items-center gap-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-sm ring-2 ring-[var(--photo)]" />
+        開始
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-sm ring-2 ring-[var(--today)]" />
+        今日
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-sm border-2 border-[var(--selected)] bg-[var(--selected)]/10" />
+        所選
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="inline-block w-2.5 h-2.5 rounded-sm ring-1 ring-[var(--text-dim)]/40" />
+        量測
+      </span>
     </div>
   </div>
 </template>

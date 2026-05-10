@@ -69,4 +69,14 @@ describe('useCheckins', () => {
     expect(res.error).toBe('rls denied')
     expect(res.data).toBeNull()
   })
+
+  it('toggle 拒絕未來日期且不呼叫 supabase', async () => {
+    const supabase = createMockSupabase({ data: null, error: null })
+    vi.stubGlobal('useSupabaseClient', () => supabase)
+    const { toggle } = useCheckins()
+    const res = await toggle('p-1', '2099-01-01', 'workout', true)
+    expect(res.error).toBe('無法打未來的卡')
+    expect(res.data).toBeNull()
+    expect(supabase.from).not.toHaveBeenCalled()
+  })
 })

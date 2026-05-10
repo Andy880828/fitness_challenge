@@ -5,6 +5,7 @@
 
 import type { Database } from '#shared/types/database'
 import type { Checkin, CheckinsByDate } from '#shared/types/checkin'
+import { todayStr } from '#shared/utils/date'
 
 type Row = Database['public']['Tables']['checkins']['Row']
 
@@ -62,6 +63,9 @@ export const useCheckins = () => {
     next: boolean,
     current: { workout: boolean; diet: boolean } = { workout: false, diet: false },
   ): Promise<{ data: Checkin | null; error: string | null }> => {
+    if (date > todayStr()) {
+      return { data: null, error: '無法打未來的卡' }
+    }
     const payload = {
       participant_id: participantId,
       date,
