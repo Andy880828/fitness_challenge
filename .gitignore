@@ -47,3 +47,6 @@ supabase/seed.sql
 
 # Vercel
 .vercel
+
+# Claude Code
+settings.local.json

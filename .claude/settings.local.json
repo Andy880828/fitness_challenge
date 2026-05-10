@@ -1,11 +1,32 @@
 {
   "permissions": {
     "allow": [
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "NotebookEdit",
       "mcp__plugin_everything-claude-code_context7__query-docs",
       "Bash(pnpm typecheck *)",
+      "Bash(pnpm typecheck)",
       "Bash(pnpm add *)",
+      "Bash(pnpm install)",
       "Bash(pnpm test:unit)",
-      "Bash(pnpm test:integration)"
+      "Bash(pnpm test:unit *)",
+      "Bash(pnpm test:integration)",
+      "Bash(pnpm test:integration *)",
+      "Bash(pnpm test)",
+      "Bash(pnpm build)",
+      "Bash(pnpm lint:fix)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Andy\\\\Desktop\\\\fitness_challenge\" -Recurse -Filter \"*.vue\")",
+      "Bash(Select-Object FullName)",
+      "Bash(xargs grep -l \"checkin.*endpoint\\\\|POST.*checkin\\\\|upsert.*checkin\")",
+      "Bash(powershell *)",
+      "Bash(xargs grep -l \"date\\\\|checkin\")"
     ]
   }
 }

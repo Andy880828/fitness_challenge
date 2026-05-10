@@ -61,6 +61,7 @@ import { useMeasures } from '~/composables/useMeasures'
 import { usePhotos } from '~/composables/usePhotos'
 import { useScore } from '~/composables/useScore'
 import { useAuth } from '~/composables/useAuth'
+import { useChangelog } from '~/composables/useChangelog'
 
 afterEach(() => {
   vi.clearAllMocks()
@@ -109,6 +110,8 @@ vi.stubGlobal('useMeasures', useMeasures)
 vi.stubGlobal('usePhotos', usePhotos)
 vi.stubGlobal('useScore', useScore)
 vi.stubGlobal('useAuth', useAuth)
+vi.stubGlobal('useChangelog', useChangelog)
+vi.stubGlobal('readonly', <T>(v: T) => v)
 
 const stateMap = new Map<string, unknown>()
 vi.stubGlobal('useState', <T>(key: string, init?: () => T) => {

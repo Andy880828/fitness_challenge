@@ -2,6 +2,8 @@
 
 12 週為期、男女分組、即時計分的減脂增肌活動平台。Nuxt 4 + Supabase + Vercel。
 
+**最新版本：v1.1**（2026-05-10）— 社群進度頁、上傳體驗升級（雙階段壓縮 + 進度條）、月曆三色語義、禁止打未來日期。完整紀錄於 `shared/data/changelog.ts`，使用者可在右下角懸浮鈕查看。
+
 ## 技術棧
 
 - **Framework**：[Nuxt 4](https://nuxt.com)（Vue 3 Composition API）
@@ -66,9 +68,10 @@ E2E_ALLOW_REGISTER=1
 
 ## 文件
 
-- [`CLAUDE.md`](./CLAUDE.md) — 專案開發管理（架構原則、agent 使用、決策紀錄）
+- [`CLAUDE.md`](./CLAUDE.md) — 專案開發管理（架構原則、agent 使用、決策紀錄、Changelog 同步規則）
 - [`docs/DEVELOPMENT.md`](./docs/DEVELOPMENT.md) — Nuxt 4 結構、alias 速查、測試基建、Vercel 部署
 - [`docs/DATABASE.md`](./docs/DATABASE.md) — Supabase schema、RLS、Storage 設定
+- [`shared/data/changelog.ts`](./shared/data/changelog.ts) — 版本更新紀錄（顯示在 UI 右下角懸浮鈕）
 
 ## 計分公式
 

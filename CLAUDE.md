@@ -265,6 +265,57 @@ $log.warn({ component: 'PhotoGrid' }, '圖片壓縮失敗，使用原圖')
 
 ---
 
+## Changelog 同步規則（重要 — 自動觸發）
+
+> 此規則讓 Claude **不需使用者每次手動提醒**就能維持版本紀錄一致。
+
+### 觸發條件
+
+任何一次 commit 滿足以下其一就要更新 changelog：
+
+- 含 `feat:` / `fix:` / `perf:` 任一 type，且影響使用者可見行為
+- 改動使用者介面（新頁面、新元件、UX 行為改變）
+- 升級對使用者體驗有感的依賴或內部演算法（壓縮、計分公式、API 行為變更）
+
+不需更新 changelog：純 `chore:` / `docs:` / `test:` / `refactor:` 且使用者無感的改動。
+
+### 三個檔案要同步
+
+每次觸發後，**必須一次更新這三個檔案，且寫進同一個 commit**：
+
+1. **`shared/data/changelog.ts`** — `CHANGELOG` 陣列**最前面**新增一個 `ChangelogEntry`：
+   ```ts
+   {
+     version: 'X.Y',          // 從 CHANGELOG[0].version 推下一版（小改 +0.1、大改 +1.0）
+     date: 'YYYY-MM-DD',      // 取 currentDate context
+     title: '一句話總結',
+     items: [
+       { kind: 'feat', text: '具體行為描述（不是技術細節）' },
+       ...
+     ],
+   }
+   ```
+   - `kind` 必須是 `feat | fix | perf | refactor | docs | chore` 之一
+   - `text` 用使用者語言（不是「重構 useCheckins」而是「打卡頁載入更快」）
+
+2. **`CLAUDE.md` → 「已知決策紀錄」表**：若該版本含**架構決策**（選 A 不選 B 的理由），在表格新增一列。純 UX 改動可略過此檔。
+
+3. **`README.md` → 「最新版本」徽章/章節**：更新版本號與日期。若 README 沒有此章節（如 v1.1 之前），第一次觸發時要新增。
+
+### 時機
+
+- **使用者主動要求 commit**：在準備 commit 訊息前先比對是否觸發，若觸發則同 commit 一起寫進去
+- **使用者要求發版**：必觸發
+- 若一個工作 session 累積多次觸發但只 commit 一次，合併成一個 entry
+
+### 不要做的事
+
+- 不要私自決定版本號跳躍（要從 1.1 跳到 2.0 必須先問使用者）
+- 不要把測試 / 內部重構寫成 `feat`
+- 不要刪除舊版本 entry（changelog 永遠 append-only）
+
+---
+
 ## Agent 使用建議
 
 | 情境 | 使用 Agent |
@@ -421,6 +472,10 @@ Free tier 連續 7 天無流量 project 會 pause。`vercel.json` 已設 cron �
 | auth layout | provide/inject 共用 participant | 各頁自抓 | 消除 dashboard / checkin 的重複載入邏輯與 error UI |
 | Profile 共用 | ProfileView + useProfileData | dashboard 與 profile/[id] 各自寫一份 | 兩頁原本 70% 重複；抽出後修一處兩頁同步 |
 | 防 Supabase pause | Vercel Cron 戳 `/api/cron/ping`（週一/四） | GitHub Actions / Supabase pg_cron / 真實流量 | 與部署平台同管道、無需額外 repo；pg_cron 在 pause 後自己也停（反向死鎖） |
+| 照片壓縮策略 (v1.1+) | 雙階段：前端 Canvas 1920px → 後端 sharp 1080px mozjpeg | 純前端壓縮 / 純後端壓縮 | 手機原檔可達數十 MB，前端先寬鬆預壓確保能上傳；後端最終把關出最小檔；`mozjpeg: true` 比一般 JPEG 編碼器多省 5–10% |
+| 上傳進度回饋 (v1.1+) | XMLHttpRequest + onProgress | $fetch / fetch ReadableStream | iOS Safari 對 fetch upload progress 支援不穩；XHR 的 `upload.onprogress` 是最可靠的跨瀏覽器方案 |
+| Changelog 來源 (v1.1+) | `shared/data/changelog.ts` (TS 物件陣列) | Supabase 動態表 / Markdown 檔 | 型別保護、零後端依賴、與 schema/RLS 解耦、append-only 直接版本控制 |
+| 未讀提示策略 (v1.1+) | localStorage 比對版本字串 | DB 寫已讀狀態 / cookie / 永遠彈 | 不需登入即可使用、跨裝置不同步是 feature（換裝置該再提示）；用字串相等避免 "1.10" < "1.2" 排序陷阱 |
 
 ---
 
