@@ -30,6 +30,21 @@ vi.mock('pino', () => {
   return { default: fn }
 })
 
+// sharp 是原生 binding，測試環境直接 mock 為「壓縮後體積為原 buffer 的一半」
+vi.mock('sharp', () => {
+  const make = (input: Buffer) => {
+    const finalBuf = Buffer.alloc(Math.max(8, Math.floor(input.length / 2)))
+    const chain = {
+      rotate: () => chain,
+      resize: () => chain,
+      jpeg: () => chain,
+      toBuffer: () => Promise.resolve(finalBuf),
+    }
+    return chain
+  }
+  return { default: make }
+})
+
 vi.mock('~/utils/image-compress', () => ({
   compressImage: vi.fn(async (file: File) => ({
     blob: new Blob([file], { type: 'image/jpeg' }),

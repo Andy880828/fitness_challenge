@@ -51,7 +51,7 @@ describe('POST /api/photos', () => {
     vi.stubGlobal('readMultipartFormData', vi.fn().mockResolvedValue([
       makePart('participantId', Buffer.from('p-1')),
       makePart('date', Buffer.from('2026-04-01')),
-      makePart('file', Buffer.alloc(3 * 1024 * 1024), 'image/jpeg'),
+      makePart('file', Buffer.alloc(9 * 1024 * 1024), 'image/jpeg'),
     ]))
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 413 })
   })

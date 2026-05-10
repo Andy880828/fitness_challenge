@@ -24,6 +24,17 @@ export const PHOTO_COMPRESS = {
   maxBytes: 2 * 1024 * 1024,
 } as const
 
+export const PHOTO_COMPRESS_CLIENT = {
+  maxWidth: 1920,
+  jpegQuality: 0.85,
+  maxBytes: 8 * 1024 * 1024,
+} as const
+
+export const PHOTO_COMPRESS_SERVER = {
+  maxWidth: 1080,
+  jpegQuality: 0.8,
+} as const
+
 export const STORAGE_BUCKET = 'food-photos' as const
 
 export const DEFAULT_START_DATE = '2026-05-07' as const

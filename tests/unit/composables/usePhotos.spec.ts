@@ -42,39 +42,71 @@ describe('usePhotos', () => {
     expect(await listByParticipant('p-1')).toEqual({})
   })
 
-  it('upload 檔案過大直接回 error 不打 API', async () => {
+  it('upload 檔案過大直接回 error 不打 XHR', async () => {
     const supabase = createMockSupabase({ data: null, error: null })
     vi.stubGlobal('useSupabaseClient', () => supabase)
-    const fetchMock = vi.fn()
-    vi.stubGlobal('$fetch', fetchMock)
+    const xhrCtor = vi.fn()
+    vi.stubGlobal('XMLHttpRequest', xhrCtor)
 
-    const huge = new File([new Uint8Array(3 * 1024 * 1024)], 'big.jpg', { type: 'image/jpeg' })
+    const huge = new File([new Uint8Array(9 * 1024 * 1024)], 'big.jpg', { type: 'image/jpeg' })
     const { upload } = usePhotos()
     const res = await upload('p-1', '2026-04-01', huge)
     expect(res.error).toMatch(/超過/)
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(xhrCtor).not.toHaveBeenCalled()
   })
 
-  it('upload 壓縮 + 打 /api/photos', async () => {
+  it('upload 壓縮 + XHR 上傳並回報兩段 progress', async () => {
     const supabase = createMockSupabase({ data: null, error: null })
     vi.stubGlobal('useSupabaseClient', () => supabase)
-    const fetchMock = vi.fn().mockResolvedValue({
-      id: 'ph1',
-      participantId: 'p-male-1',
-      date: '2026-04-01',
-      storagePath: 'x',
-      publicUrl: 'y',
-      sizeBytes: 100,
-      uploadedAt: 'z',
-    })
-    vi.stubGlobal('$fetch', fetchMock)
 
+    const sendSpy = vi.fn()
+    let onload: (() => void) | null = null
+    let progressListener: ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null = null
+    class MockXHR {
+      status = 200
+      responseText = JSON.stringify({
+        id: 'ph1',
+        participantId: 'p-male-1',
+        date: '2026-04-01',
+        storagePath: 'x',
+        publicUrl: 'y',
+        sizeBytes: 100,
+        uploadedAt: 'z',
+      })
+      responseType = ''
+      withCredentials = false
+      upload = {
+        addEventListener: (_ev: string, cb: typeof progressListener) => {
+          progressListener = cb
+        },
+      }
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      onabort: (() => void) | null = null
+      open() {}
+      send(body: unknown) {
+        sendSpy(body)
+        progressListener?.({ lengthComputable: true, loaded: 50, total: 100 })
+        progressListener?.({ lengthComputable: true, loaded: 100, total: 100 })
+        onload = this.onload
+        queueMicrotask(() => this.onload?.())
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', MockXHR)
+
+    const compressPct: number[] = []
+    const uploadPct: number[] = []
     const file = new File([new Uint8Array(100)], 'a.jpg', { type: 'image/jpeg' })
     const { upload } = usePhotos()
-    const res = await upload('p-male-1', '2026-04-01', file)
+    const res = await upload('p-male-1', '2026-04-01', file, {
+      onCompressProgress: (p) => compressPct.push(p),
+      onUploadProgress: (p) => uploadPct.push(p),
+    })
     expect(res.error).toBeNull()
     expect(res.data?.id).toBe('ph1')
-    expect(fetchMock).toHaveBeenCalledWith('/api/photos', expect.objectContaining({ method: 'POST' }))
+    expect(sendSpy).toHaveBeenCalled()
+    expect(uploadPct).toContain(100)
+    expect(onload).toBeTruthy()
   })
 
   it('remove 呼叫 DELETE endpoint', async () => {

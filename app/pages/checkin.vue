@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { todayStr } from '#shared/utils/date'
+import type { UploadStage } from '~/components/checkin/PhotoUploadButton.vue'
 
 definePageMeta({ middleware: 'auth', layout: 'auth' })
 useHead({ title: '每日打卡 · 減脂增肌挑戰賽' })
@@ -10,11 +11,15 @@ const { listByParticipant, upload, remove } = usePhotos()
 const { settings } = useChallenge()
 
 const selectedDate = ref<string>(todayStr())
+const todayIso = computed(() => todayStr())
+const isFutureSelected = computed(() => selectedDate.value > todayIso.value)
 const checkinsMap = ref<Record<string, { workout: boolean; diet: boolean }>>({})
 const photosMap = ref<Record<string, Awaited<ReturnType<typeof listByParticipant>>[string]>>({})
 const lightboxSrc = ref<string | null>(null)
 const error = ref<string | null>(null)
 const busy = ref(false)
+const uploadStage = ref<UploadStage>('idle')
+const uploadProgress = ref(0)
 
 const today = new Date(selectedDate.value)
 const year = ref(today.getUTCFullYear())
@@ -63,13 +68,25 @@ const onPhotoSelect = async (file: File) => {
   if (!participant.value) return
   busy.value = true
   error.value = null
-  const res = await upload(participant.value.id, selectedDate.value, file)
+  uploadStage.value = 'compressing'
+  uploadProgress.value = 0
+  const res = await upload(participant.value.id, selectedDate.value, file, {
+    onCompressProgress: (pct) => {
+      uploadProgress.value = pct
+    },
+    onUploadProgress: (pct) => {
+      if (uploadStage.value !== 'uploading') uploadStage.value = 'uploading'
+      uploadProgress.value = pct
+    },
+  })
   if (res.error) {
     error.value = res.error
   } else if (res.data) {
     const list = photosMap.value[selectedDate.value] ?? []
     photosMap.value = { ...photosMap.value, [selectedDate.value]: [res.data, ...list] }
   }
+  uploadStage.value = 'idle'
+  uploadProgress.value = 0
   busy.value = false
 }
 
@@ -133,7 +150,10 @@ const nextMonth = () => {
           <div class="mono text-[0.65rem] uppercase tracking-wider text-[var(--text-dim)] mb-2">
             選擇日期
           </div>
-          <input v-model="selectedDate" type="date" class="input">
+          <input v-model="selectedDate" type="date" class="input" :max="todayIso">
+          <p v-if="isFutureSelected" class="mono text-[0.65rem] text-[var(--accent-2)] mt-2">
+            無法打未來的卡
+          </p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -141,14 +161,14 @@ const nextMonth = () => {
             label="運動"
             variant="workout"
             :active="todaysState.workout"
-            :disabled="busy"
+            :disabled="busy || isFutureSelected"
             @toggle="onToggle('workout')"
           />
           <CheckinTile
             label="飲食"
             variant="diet"
             :active="todaysState.diet"
-            :disabled="busy"
+            :disabled="busy || isFutureSelected"
             @toggle="onToggle('diet')"
           />
         </div>
@@ -158,7 +178,12 @@ const nextMonth = () => {
             飲食照片
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            <PhotoUploadButton :disabled="busy" @select="onPhotoSelect" />
+            <PhotoUploadButton
+              :disabled="busy || isFutureSelected"
+              :stage="uploadStage"
+              :progress="uploadProgress"
+              @select="onPhotoSelect"
+            />
             <div
               v-for="p in todaysPhotos"
               :key="p.id"
