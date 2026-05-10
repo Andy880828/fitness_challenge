@@ -13,3 +13,13 @@ export interface PhotoUploadResult {
 }
 
 export type PhotosByDate = Record<string, Photo[]>
+
+export interface PhotoOwner {
+  id: string
+  name: string
+  gender: 'M' | 'F'
+}
+
+export interface PhotoWithOwner extends Photo {
+  owner: PhotoOwner
+}

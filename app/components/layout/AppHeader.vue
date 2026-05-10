@@ -26,6 +26,7 @@ const publicNav: readonly NavItem[] = [
 
 const authedNav: readonly NavItem[] = [
   { to: '/leaderboard', label: '排行榜' },
+  { to: '/gallery', label: '社群進度' },
   { to: '/checkin', label: '每日打卡' },
   { to: '/dashboard', label: '我的儀表板' },
   { to: '/rules', label: '規則' },
