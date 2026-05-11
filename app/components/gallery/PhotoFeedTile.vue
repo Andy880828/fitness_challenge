@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PhotoWithOwner } from '#shared/types/photo'
+import { formatDateZh, todayStr } from '#shared/utils/date'
 
 interface Props {
   photo: PhotoWithOwner
@@ -7,19 +8,11 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{ open: [src: string] }>()
 
-const relativeTime = (iso: string): string => {
-  const diffMs = Date.now() - new Date(iso).getTime()
-  const min = Math.floor(diffMs / 60_000)
-  if (min < 1) return '剛剛'
-  if (min < 60) return `${min} 分鐘前`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} 小時前`
-  const day = Math.floor(hr / 24)
-  if (day < 30) return `${day} 天前`
-  return iso.slice(0, 10)
-}
-
-const ago = computed(() => relativeTime(props.photo.uploadedAt))
+const dateLabel = computed(() => {
+  const today = todayStr()
+  if (props.photo.date === today) return '今天'
+  return formatDateZh(props.photo.date)
+})
 </script>
 
 <template>
@@ -45,7 +38,7 @@ const ago = computed(() => relativeTime(props.photo.uploadedAt))
         />
         {{ photo.owner.name }}
       </span>
-      <span class="mono text-[0.6rem] opacity-80">{{ ago }}</span>
+      <span class="mono text-[0.6rem] opacity-80">{{ dateLabel }}</span>
     </NuxtLink>
   </div>
 </template>

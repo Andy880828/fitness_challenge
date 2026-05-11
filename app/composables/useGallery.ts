@@ -66,6 +66,7 @@ export const useGallery = () => {
     const { data, error } = await supabase
       .from('photos')
       .select('*, participant:participants(id, name, gender)')
+      .order('date', { ascending: false })
       .order('uploaded_at', { ascending: false })
       .range(offset, offset + limit - 1)
     if (error || !data) return []
