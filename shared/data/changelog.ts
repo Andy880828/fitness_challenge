@@ -25,6 +25,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.2',
+    date: '2026-05-11',
+    title: '社群相簿時序修正 + 補打卡上限 + 計分規則放寬',
+    items: [
+      { kind: 'fix', text: '社群相簿改以照片所屬日期排序，補傳照片不再佔據最新位置；右下角顯示也改為照片日期' },
+      { kind: 'feat', text: '補打卡僅限「今天往前 3 天」內，月曆上更早的日期會變灰不可點選' },
+      { kind: 'feat', text: '計分公式取消體脂下限保護與減脂/增肌封頂，分數直接反映實際變化幅度（1% 變化 = 1 分）' },
+    ],
+  },
+  {
     version: '1.1',
     date: '2026-05-10',
     title: '社群進度頁、上傳體驗升級、月曆三色',

@@ -476,6 +476,9 @@ Free tier 連續 7 天無流量 project 會 pause。`vercel.json` 已設 cron �
 | 上傳進度回饋 (v1.1+) | XMLHttpRequest + onProgress | $fetch / fetch ReadableStream | iOS Safari 對 fetch upload progress 支援不穩；XHR 的 `upload.onprogress` 是最可靠的跨瀏覽器方案 |
 | Changelog 來源 (v1.1+) | `shared/data/changelog.ts` (TS 物件陣列) | Supabase 動態表 / Markdown 檔 | 型別保護、零後端依賴、與 schema/RLS 解耦、append-only 直接版本控制 |
 | 未讀提示策略 (v1.1+) | localStorage 比對版本字串 | DB 寫已讀狀態 / cookie / 永遠彈 | 不需登入即可使用、跨裝置不同步是 feature（換裝置該再提示）；用字串相等避免 "1.10" < "1.2" 排序陷阱 |
+| 計分公式封頂 (v1.2+) | 移除 SAFETY_FLOOR / FAT_CAP / MUSCLE_CAP，1% 變化 = 1 分線性 | 維持封頂 / 調整縮放比例 | 規則放寬：分數真實反映變化幅度，極端值由活動規範本身約束（非演算法強加）。總分理論上限不再是 100，排行榜分數會普遍下降但相對排序仍合理 |
+| 社群相簿排序 (v1.2+) | `date` desc + `uploaded_at` desc tie-breaker | 純 `uploaded_at` | 補傳舊照片不再霸佔頂部；同日多張仍按上傳時序穩定排序 |
+| 補打卡上限 (v1.2+) | 僅允許「今日往前 3 天」，UI + composable 雙層擋 | 不限制 / 只擋 UI | 防止活動後期一次補滿過去缺打的卡刷分；雙層擋避免繞 UI 直接打 API |
 
 ---
 
