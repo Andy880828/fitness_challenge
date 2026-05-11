@@ -1,5 +1,3 @@
-import type { Gender } from '#shared/types/participant'
-
 export const TOTAL_DAYS = 84
 
 export const MEASURE_WEEKS = [0, 4, 8, 12] as const
@@ -7,10 +5,7 @@ export const MEASURE_LABELS = ['初始', '第4週', '第8週', '結算'] as cons
 
 export const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'] as const
 
-export const SAFETY_FLOOR: Record<Gender, number> = { M: 10, F: 16 }
-
-export const FAT_CAP = 15
-export const MUSCLE_CAP = 8
+export const CHECKIN_BACKFILL_DAYS = 3
 
 export const SCORE_WEIGHTS = {
   fat: 0.4,

@@ -31,7 +31,7 @@ describe('utils/score · computeScore', () => {
     expect(result.latest).toBeNull()
   })
 
-  it('完整 4 次量測 + 全勤 84 天 → 趨近滿分', () => {
+  it('完整 4 次量測 + 全勤 84 天 → 線性計分 (1% = 1 分)', () => {
     const measurements: MeasurementsByWeek = {
       0: mkMeasure({ weekIndex: 0, weight: 80, fatPct: 25, muscle: 30 }),
       1: mkMeasure({ weekIndex: 1, weight: 78, fatPct: 22, muscle: 31 }),
@@ -49,12 +49,14 @@ describe('utils/score · computeScore', () => {
     expect(result.processScore).toBe(100)
     expect(result.fatChange).toBeCloseTo(28, 1)
     expect(result.muscleChange).toBeCloseTo(10, 1)
-    expect(result.fatScore).toBe(100)
-    expect(result.muscleScore).toBe(100)
-    expect(result.total).toBeCloseTo(100, 1)
+    // 線性：fatScore = fatChange、muscleScore = muscleChange
+    expect(result.fatScore).toBeCloseTo(28, 1)
+    expect(result.muscleScore).toBeCloseTo(10, 1)
+    // total = 28*0.4 + 10*0.4 + 100*0.2 = 11.2 + 4 + 20 = 35.2
+    expect(result.total).toBeCloseTo(35.2, 1)
   })
 
-  it('安全護欄 — 男性體脂從 12% 降到 8% 不再加分（floor=10）', () => {
+  it('無安全護欄 — 男性體脂從 12% 降到 8% 全額計分', () => {
     const measurements: MeasurementsByWeek = {
       0: mkMeasure({ weekIndex: 0, weight: 70, fatPct: 12, muscle: 35 }),
       3: mkMeasure({ weekIndex: 3, weight: 68, fatPct: 8, muscle: 35 }),
@@ -67,11 +69,12 @@ describe('utils/score · computeScore', () => {
       photoDays: 0,
       effectiveDays: 84,
     })
-    // floor=10，effEnd=max(8,10)=10，fatChange=(12-10)/12*100 ≈ 16.67
-    expect(result.fatChange).toBeCloseTo(16.67, 1)
+    // fatChange=(12-8)/12*100 ≈ 33.33（不再被 floor=10 夾）
+    expect(result.fatChange).toBeCloseTo(33.33, 1)
+    expect(result.fatScore).toBeCloseTo(33.33, 1)
   })
 
-  it('安全護欄 — 女性 floor=16', () => {
+  it('無安全護欄 — 女性體脂大幅下降直接反映', () => {
     const measurements: MeasurementsByWeek = {
       0: mkMeasure({ weekIndex: 0, weight: 55, fatPct: 20, muscle: 22 }),
       3: mkMeasure({ weekIndex: 3, weight: 52, fatPct: 14, muscle: 22 }),
@@ -84,8 +87,9 @@ describe('utils/score · computeScore', () => {
       photoDays: 0,
       effectiveDays: 84,
     })
-    // floor=16，effEnd=max(14,16)=16，fatChange=(20-16)/20*100 = 20
-    expect(result.fatChange).toBe(20)
+    // fatChange=(20-14)/20*100 = 30（不再被 floor=16 夾到 20）
+    expect(result.fatChange).toBe(30)
+    expect(result.fatScore).toBe(30)
   })
 
   it('體脂上升 → fatChange 為負，但 fatScore 取 max(0, ...) → 0', () => {
@@ -105,7 +109,7 @@ describe('utils/score · computeScore', () => {
     expect(result.fatScore).toBe(0)
   })
 
-  it('FAT_CAP 上限 — 減脂率超過 15% 也只計 100 分', () => {
+  it('減脂率超過 15% 不再被封頂，1% = 1 分', () => {
     const measurements: MeasurementsByWeek = {
       0: mkMeasure({ weekIndex: 0, weight: 90, fatPct: 30, muscle: 30 }),
       3: mkMeasure({ weekIndex: 3, weight: 75, fatPct: 18, muscle: 30 }),
@@ -118,9 +122,9 @@ describe('utils/score · computeScore', () => {
       photoDays: 0,
       effectiveDays: 84,
     })
-    // fatChange=(30-18)/30*100=40，超過 cap 15 → fatScore=100
+    // fatChange=(30-18)/30*100=40，fatScore 也是 40（不再封頂為 100）
     expect(result.fatChange).toBeCloseTo(40, 1)
-    expect(result.fatScore).toBe(100)
+    expect(result.fatScore).toBeCloseTo(40, 1)
   })
 
   it('過程分計算正確', () => {

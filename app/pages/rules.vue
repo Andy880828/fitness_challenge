@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TOTAL_DAYS, MEASURE_LABELS, FAT_CAP, MUSCLE_CAP, SAFETY_FLOOR, SCORE_WEIGHTS } from '#shared/utils/constants'
+import { TOTAL_DAYS, MEASURE_LABELS, SCORE_WEIGHTS } from '#shared/utils/constants'
 import { measureDates, formatDateZh } from '#shared/utils/date'
 
 useHead({ title: '規則 · 減脂增肌挑戰賽' })
@@ -37,12 +37,12 @@ const measureDays = computed(() => measureDates(settings.value.startDate))
         綜合分 = 減脂 × {{ SCORE_WEIGHTS.fat * 100 }}% + 增肌 × {{ SCORE_WEIGHTS.muscle * 100 }}% + 過程 × {{ SCORE_WEIGHTS.process * 100 }}%
       </p>
       <ul class="text-sm space-y-1">
-        <li>· 減脂：(初始體脂% − 最新體脂%) / 初始 × 100，封頂 {{ FAT_CAP }}%</li>
-        <li>· 增肌：(最新肌肉 − 初始肌肉) / 初始 × 100，封頂 {{ MUSCLE_CAP }}%</li>
+        <li>· 減脂：(初始體脂% − 最新體脂%) / 初始 × 100（直接作為分數，不封頂）</li>
+        <li>· 增肌：(最新肌肉 − 初始肌肉) / 初始 × 100（直接作為分數，不封頂）</li>
         <li>· 過程：總打卡 / (有效天數 × 3) × 100，封頂 100</li>
       </ul>
       <p class="text-xs text-[var(--text-dim)] mono">
-        安全護欄：男子體脂下限 {{ SAFETY_FLOOR.M }}%、女子 {{ SAFETY_FLOOR.F }}%（避免極端減脂）
+        分數真實反映變化幅度，無上下限保護；極端目標由活動規範本身約束。
       </p>
     </section>
 

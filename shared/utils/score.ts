@@ -3,7 +3,7 @@
  * 三項加權：減脂 40 + 增肌 40 + 過程 20 = 100
  */
 
-import { FAT_CAP, MUSCLE_CAP, SAFETY_FLOOR, SCORE_WEIGHTS } from './constants'
+import { SCORE_WEIGHTS } from './constants'
 import type { Gender } from '#shared/types/participant'
 import type { Measurement, MeasurementsByWeek, WeekIndex } from '#shared/types/measure'
 import type { ScoreBreakdown } from '#shared/types/score'
@@ -37,9 +37,7 @@ export const computeScore = (ctx: ScoreContext): ScoreBreakdown => {
   let muscleChange = 0
 
   if (start && latest && start.fatPct > 0) {
-    const floor = SAFETY_FLOOR[ctx.gender]
-    const effEnd = Math.max(latest.fatPct, floor)
-    fatChange = ((start.fatPct - effEnd) / start.fatPct) * 100
+    fatChange = ((start.fatPct - latest.fatPct) / start.fatPct) * 100
   }
 
   if (start && latest && start.muscle > 0) {
@@ -51,8 +49,8 @@ export const computeScore = (ctx: ScoreContext): ScoreBreakdown => {
   const processScore =
     expectedCheckins > 0 ? Math.min(100, (totalCheckins / expectedCheckins) * 100) : 0
 
-  const fatNorm = Math.min(100, (Math.max(0, fatChange) / FAT_CAP) * 100)
-  const muscleNorm = Math.min(100, (Math.max(0, muscleChange) / MUSCLE_CAP) * 100)
+  const fatNorm = Math.max(0, fatChange)
+  const muscleNorm = Math.max(0, muscleChange)
 
   const total =
     fatNorm * SCORE_WEIGHTS.fat +
