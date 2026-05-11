@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { CheckinsByDate } from '#shared/types/checkin'
 import type { PhotosByDate } from '#shared/types/photo'
-import { WEEKDAY_LABELS } from '#shared/utils/constants'
-import { measureDates, todayStr } from '#shared/utils/date'
+import { CHECKIN_BACKFILL_DAYS, WEEKDAY_LABELS } from '#shared/utils/constants'
+import { addDays, measureDates, todayStr } from '#shared/utils/date'
 
 interface Props {
   year: number
@@ -23,6 +23,7 @@ interface Cell {
   day: number | null
   inMonth: boolean
   isFuture: boolean
+  isPastLimit: boolean
 }
 
 const cells = computed<Cell[]>(() => {
@@ -30,16 +31,23 @@ const cells = computed<Cell[]>(() => {
   const startWeekday = first.getUTCDay()
   const daysInMonth = new Date(Date.UTC(props.year, props.month, 0)).getUTCDate()
   const todayIso = today.value
+  const earliest = addDays(todayIso, -CHECKIN_BACKFILL_DAYS)
   const result: Cell[] = []
   for (let i = 0; i < startWeekday; i += 1) {
-    result.push({ iso: null, day: null, inMonth: false, isFuture: false })
+    result.push({ iso: null, day: null, inMonth: false, isFuture: false, isPastLimit: false })
   }
   for (let d = 1; d <= daysInMonth; d += 1) {
     const iso = `${props.year}-${String(props.month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    result.push({ iso, day: d, inMonth: true, isFuture: iso > todayIso })
+    result.push({
+      iso,
+      day: d,
+      inMonth: true,
+      isFuture: iso > todayIso,
+      isPastLimit: iso < earliest,
+    })
   }
   while (result.length % 7 !== 0) {
-    result.push({ iso: null, day: null, inMonth: false, isFuture: false })
+    result.push({ iso: null, day: null, inMonth: false, isFuture: false, isPastLimit: false })
   }
   return result
 })
@@ -56,7 +64,7 @@ const dotsFor = (iso: string | null) => {
 }
 
 const onClickCell = (cell: Cell) => {
-  if (!cell.iso || cell.isFuture) return
+  if (!cell.iso || cell.isFuture || cell.isPastLimit) return
   emit('select', cell.iso)
 }
 </script>
@@ -71,11 +79,11 @@ const onClickCell = (cell: Cell) => {
         v-for="(cell, i) in cells"
         :key="i"
         type="button"
-        :disabled="!cell.inMonth || cell.isFuture"
+        :disabled="!cell.inMonth || cell.isFuture || cell.isPastLimit"
         class="aspect-square rounded text-xs sm:text-sm flex flex-col items-center justify-center relative transition-colors border-2"
         :class="[
           cell.inMonth ? 'border-transparent' : 'border-transparent',
-          cell.isFuture ? 'opacity-40 cursor-not-allowed' : '',
+          cell.isFuture || cell.isPastLimit ? 'opacity-40 cursor-not-allowed' : '',
           cell.iso === startDate ? 'ring-2 ring-[var(--photo)]' : '',
           cell.iso === today ? 'ring-2 ring-[var(--today)]' : '',
           selected === cell.iso ? '!border-[var(--selected)] bg-[var(--selected)]/10' : '',

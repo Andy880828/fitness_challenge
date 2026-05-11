@@ -5,7 +5,8 @@
 
 import type { Database } from '#shared/types/database'
 import type { Checkin, CheckinsByDate } from '#shared/types/checkin'
-import { todayStr } from '#shared/utils/date'
+import { addDays, todayStr } from '#shared/utils/date'
+import { CHECKIN_BACKFILL_DAYS } from '#shared/utils/constants'
 
 type Row = Database['public']['Tables']['checkins']['Row']
 
@@ -63,8 +64,13 @@ export const useCheckins = () => {
     next: boolean,
     current: { workout: boolean; diet: boolean } = { workout: false, diet: false },
   ): Promise<{ data: Checkin | null; error: string | null }> => {
-    if (date > todayStr()) {
+    const today = todayStr()
+    if (date > today) {
       return { data: null, error: '無法打未來的卡' }
+    }
+    const earliest = addDays(today, -CHECKIN_BACKFILL_DAYS)
+    if (date < earliest) {
+      return { data: null, error: `補打卡僅限近 ${CHECKIN_BACKFILL_DAYS} 天內` }
     }
     const payload = {
       participant_id: participantId,

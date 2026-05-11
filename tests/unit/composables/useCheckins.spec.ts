@@ -48,11 +48,11 @@ describe('useCheckins', () => {
   })
 
   it('toggle workout 保留 diet 現值', async () => {
-    const row = checkinRow('2026-04-10', true, true)
+    const row = checkinRow('2026-05-10', true, true)
     const supabase = createMockSupabase({ data: row, error: null })
     vi.stubGlobal('useSupabaseClient', () => supabase)
     const { toggle } = useCheckins()
-    const res = await toggle('p-male-1', '2026-04-10', 'workout', true, {
+    const res = await toggle('p-male-1', '2026-05-10', 'workout', true, {
       workout: false,
       diet: true,
     })
@@ -65,7 +65,7 @@ describe('useCheckins', () => {
     const supabase = createMockSupabase({ data: null, error: { message: 'rls denied' } })
     vi.stubGlobal('useSupabaseClient', () => supabase)
     const { toggle } = useCheckins()
-    const res = await toggle('p-1', '2026-04-10', 'workout', true)
+    const res = await toggle('p-1', '2026-05-10', 'workout', true)
     expect(res.error).toBe('rls denied')
     expect(res.data).toBeNull()
   })
@@ -76,6 +76,17 @@ describe('useCheckins', () => {
     const { toggle } = useCheckins()
     const res = await toggle('p-1', '2099-01-01', 'workout', true)
     expect(res.error).toBe('無法打未來的卡')
+    expect(res.data).toBeNull()
+    expect(supabase.from).not.toHaveBeenCalled()
+  })
+
+  it('toggle 拒絕超過 3 天前的日期且不呼叫 supabase', async () => {
+    const supabase = createMockSupabase({ data: null, error: null })
+    vi.stubGlobal('useSupabaseClient', () => supabase)
+    const { toggle } = useCheckins()
+    // 2000-01-01 必然超過 3 天前
+    const res = await toggle('p-1', '2000-01-01', 'workout', true)
+    expect(res.error).toBe('補打卡僅限近 3 天內')
     expect(res.data).toBeNull()
     expect(supabase.from).not.toHaveBeenCalled()
   })
