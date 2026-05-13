@@ -59,6 +59,8 @@ import { useParticipants } from '~/composables/useParticipants'
 import { useCheckins } from '~/composables/useCheckins'
 import { useMeasures } from '~/composables/useMeasures'
 import { usePhotos } from '~/composables/usePhotos'
+import { useExerciseProofs } from '~/composables/useExerciseProofs'
+import { useAdminExerciseProofs } from '~/composables/useAdminExerciseProofs'
 import { useScore } from '~/composables/useScore'
 import { useAuth } from '~/composables/useAuth'
 import { useChangelog } from '~/composables/useChangelog'
@@ -108,6 +110,8 @@ vi.stubGlobal('useParticipants', useParticipants)
 vi.stubGlobal('useCheckins', useCheckins)
 vi.stubGlobal('useMeasures', useMeasures)
 vi.stubGlobal('usePhotos', usePhotos)
+vi.stubGlobal('useExerciseProofs', useExerciseProofs)
+vi.stubGlobal('useAdminExerciseProofs', useAdminExerciseProofs)
 vi.stubGlobal('useScore', useScore)
 vi.stubGlobal('useAuth', useAuth)
 vi.stubGlobal('useChangelog', useChangelog)
