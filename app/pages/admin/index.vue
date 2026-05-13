@@ -25,9 +25,9 @@ useHead({ title: '管理中心 · 減脂增肌挑戰賽' })
         to="/admin/photos"
         class="block p-6 border border-[var(--border)] rounded hover:border-[var(--accent)] transition-colors"
       >
-        <div class="text-xs mono text-[var(--accent)] mb-2">// PHOTOS</div>
-        <h2 class="display-font text-xl mb-2">照片管理</h2>
-        <p class="text-sm text-[var(--text-dim)]">依參賽者 / 日期篩選，可批量刪除。</p>
+        <div class="text-xs mono text-[var(--accent)] mb-2">// MEDIA</div>
+        <h2 class="display-font text-xl mb-2">照片與證明管理</h2>
+        <p class="text-sm text-[var(--text-dim)]">飲食照片 / 運動證明分頁管理，依參賽者 / 日期篩選，可批量刪除。</p>
       </NuxtLink>
     </div>
   </div>
