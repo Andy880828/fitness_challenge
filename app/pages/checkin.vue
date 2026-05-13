@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { todayStr } from '#shared/utils/date'
 import type { UploadStage } from '~/components/checkin/PhotoUploadButton.vue'
+import type { ExerciseProof } from '#shared/types/exercise'
 
 definePageMeta({ middleware: 'auth', layout: 'auth' })
 useHead({ title: '每日打卡 · 減脂增肌挑戰賽' })
@@ -8,6 +9,7 @@ useHead({ title: '每日打卡 · 減脂增肌挑戰賽' })
 const { participant } = useParticipantContext()
 const { listRange, toggle } = useCheckins()
 const { listByParticipant, upload, remove } = usePhotos()
+const { listByParticipantDate } = useExerciseProofs()
 const { settings } = useChallenge()
 
 const selectedDate = ref<string>(todayStr())
@@ -20,6 +22,8 @@ const error = ref<string | null>(null)
 const busy = ref(false)
 const uploadStage = ref<UploadStage>('idle')
 const uploadProgress = ref(0)
+const exerciseProofs = ref<ExerciseProof[]>([])
+const showExerciseModal = ref(false)
 
 const today = new Date(selectedDate.value)
 const year = ref(today.getUTCFullYear())
@@ -38,19 +42,27 @@ const reload = async () => {
   photosMap.value = p
 }
 
+const refreshExerciseProofs = async () => {
+  if (!participant.value) return
+  exerciseProofs.value = await listByParticipantDate(participant.value.id, selectedDate.value)
+}
+
 watch(participant, (p) => {
-  if (p) reload()
+  if (p) {
+    reload()
+    refreshExerciseProofs()
+  }
 }, { immediate: true })
 
 watch([year, month], reload)
+watch(selectedDate, refreshExerciseProofs)
 
 const todaysState = computed(() => checkinsMap.value[selectedDate.value] ?? { workout: false, diet: false })
 const todaysPhotos = computed(() => photosMap.value[selectedDate.value] ?? [])
 
-const onToggle = async (field: 'workout' | 'diet') => {
-  if (!participant.value || busy.value) return
+const applyToggle = async (field: 'workout' | 'diet', next: boolean) => {
+  if (!participant.value) return
   busy.value = true
-  const next = !todaysState.value[field]
   const prev = checkinsMap.value
   checkinsMap.value = {
     ...prev,
@@ -62,6 +74,32 @@ const onToggle = async (field: 'workout' | 'diet') => {
     error.value = res.error
   }
   busy.value = false
+}
+
+const onToggle = async (field: 'workout' | 'diet') => {
+  if (!participant.value || busy.value) return
+  const next = !todaysState.value[field]
+  // 運動打卡 ON → 必須先有證明：開 modal，由 modal confirm 觸發實際 toggle
+  if (field === 'workout' && next) {
+    error.value = null
+    await refreshExerciseProofs()
+    showExerciseModal.value = true
+    return
+  }
+  await applyToggle(field, next)
+}
+
+const onExerciseConfirm = async () => {
+  showExerciseModal.value = false
+  await applyToggle('workout', true)
+}
+
+const onExerciseProofAdded = (proof: ExerciseProof) => {
+  exerciseProofs.value = [proof, ...exerciseProofs.value]
+}
+
+const onExerciseProofRemoved = (id: string) => {
+  exerciseProofs.value = exerciseProofs.value.filter(p => p.id !== id)
 }
 
 const onPhotoSelect = async (file: File) => {
@@ -204,5 +242,18 @@ const nextMonth = () => {
     </div>
 
     <Lightbox :src="lightboxSrc" @close="lightboxSrc = null" />
+
+    <ExerciseProofModal
+      v-if="participant"
+      :open="showExerciseModal"
+      :participant-id="participant.id"
+      :date="selectedDate"
+      :proofs="exerciseProofs"
+      :busy="busy"
+      @confirm="onExerciseConfirm"
+      @close="showExerciseModal = false"
+      @proof-added="onExerciseProofAdded"
+      @proof-removed="onExerciseProofRemoved"
+    />
   </div>
 </template>
