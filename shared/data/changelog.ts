@@ -25,6 +25,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.4',
+    date: '2026-05-14',
+    title: '管理中心新增運動證明管理',
+    items: [
+      { kind: 'feat', text: '管理中心「照片管理」改為「照片與證明管理」，加入飲食 / 運動切換 tab，可篩選、預覽、單筆或批量刪除運動照片與文字證明，刪除動作同樣寫入稽核軌跡' },
+    ],
+  },
+  {
+    version: '1.3',
+    date: '2026-05-13',
+    title: '運動打卡證明 + 社群相簿雙 Tab + 規則公式表達優化',
+    items: [
+      { kind: 'feat', text: '運動打卡新增證明流程：點「運動」會彈窗要求照片或文字證明，至少 1 筆才能完成打卡；已打卡再點則直接取消' },
+      { kind: 'feat', text: '社群進度新增「飲食 / 運動」切換 tab，運動照片與文字證明同網格瀏覽，文字也能 lightbox 放大' },
+      { kind: 'docs', text: '規則頁計分公式改以程式碼風格區塊呈現，1:1 對映 score.ts 實作，新增說明運動證明不計入分數' },
+    ],
+  },
+  {
     version: '1.2',
     date: '2026-05-11',
     title: '社群相簿時序修正 + 補打卡上限 + 計分規則放寬',

@@ -479,6 +479,10 @@ Free tier 連續 7 天無流量 project 會 pause。`vercel.json` 已設 cron �
 | 計分公式封頂 (v1.2+) | 移除 SAFETY_FLOOR / FAT_CAP / MUSCLE_CAP，1% 變化 = 1 分線性 | 維持封頂 / 調整縮放比例 | 規則放寬：分數真實反映變化幅度，極端值由活動規範本身約束（非演算法強加）。總分理論上限不再是 100，排行榜分數會普遍下降但相對排序仍合理 |
 | 社群相簿排序 (v1.2+) | `date` desc + `uploaded_at` desc tie-breaker | 純 `uploaded_at` | 補傳舊照片不再霸佔頂部；同日多張仍按上傳時序穩定排序 |
 | 補打卡上限 (v1.2+) | 僅允許「今日往前 3 天」，UI + composable 雙層擋 | 不限制 / 只擋 UI | 防止活動後期一次補滿過去缺打的卡刷分；雙層擋避免繞 UI 直接打 API |
+| 運動證明資料模型 (v1.3+) | 新表 `exercise_proofs`（kind = 'photo' \| 'note'）+ CHECK 約束強制欄位 1:1 對應 | 擴 `photos` 加 category / 寫進 `checkins.workout_note` | 食物與運動語意不同（食物只可能是照片；運動可照片或文字、一日可多筆），分表避免 nullable 欄位混雜；CHECK 在 DB 層擋掉 kind/欄位不一致的髒資料 |
+| 運動打卡 modal UX (v1.3+) | 未打卡 → 開 modal 要求至少 1 筆證明後才 ON；已打卡 → 直接 OFF（保留歷史證明） | 每次點都開 modal / 證明可選不強制 | 自由心證 + 留證據的平衡；OFF 不刪 proofs 是非破壞性處理，避免誤觸丟失內容 |
+| 運動證明計分 (v1.3+) | exercise_proofs 不進 process 分；workout boolean 仍是唯一運動分量來源 | 把運動證明也算進 process 分 | 避免使用者用大量假證明刷分；證明只是可信度依據，不是計分維度 |
+| Gallery 雙 tab + lightbox 文字 (v1.3+) | 切 tab 切 query（food → `photos`、exercise → `exercise_proofs`）；Lightbox 加 `text` prop 支援文字放大 | UNION 兩表 / 用 category 欄位 filter / 文字另開元件 | 兩表結構不同硬 UNION 不划算；切 query 邏輯最清楚；Lightbox 既有元件擴 prop 比新建一個文字 modal 簡潔 |
 
 ---
 
