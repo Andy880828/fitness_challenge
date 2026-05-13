@@ -10,12 +10,22 @@
 
 import type { Database } from '#shared/types/database'
 import type { PhotoWithOwner } from '#shared/types/photo'
+import type { ExerciseProofWithOwner } from '#shared/types/exercise'
 
 type PhotoRow = Database['public']['Tables']['photos']['Row']
+type ExerciseProofRow = Database['public']['Tables']['exercise_proofs']['Row']
 type MeasurementRow = Database['public']['Tables']['measurements']['Row']
 type LeaderboardRow = Database['public']['Views']['leaderboard_view']['Row']
 
 interface PhotoRowWithParticipant extends PhotoRow {
+  participant: {
+    id: string
+    name: string
+    gender: 'M' | 'F'
+  } | null
+}
+
+interface ExerciseProofRowWithParticipant extends ExerciseProofRow {
   participant: {
     id: string
     name: string
@@ -61,6 +71,40 @@ const fromPhotoRow = (r: PhotoRowWithParticipant): PhotoWithOwner | null => {
 
 export const useGallery = () => {
   const supabase = useSupabaseClient<any>()
+
+  const listRecentExerciseProofs = async (
+    limit = 60,
+    offset = 0,
+  ): Promise<ExerciseProofWithOwner[]> => {
+    const { data, error } = await supabase
+      .from('exercise_proofs')
+      .select('*, participant:participants(id, name, gender)')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+    if (error || !data) return []
+    return (data as ExerciseProofRowWithParticipant[])
+      .map((r): ExerciseProofWithOwner | null => {
+        if (!r.participant) return null
+        return {
+          id: r.id,
+          participantId: r.participant_id,
+          date: r.date,
+          kind: r.kind,
+          note: r.note,
+          storagePath: r.storage_path,
+          publicUrl: r.public_url,
+          sizeBytes: r.size_bytes,
+          createdAt: r.created_at,
+          owner: {
+            id: r.participant.id,
+            name: r.participant.name,
+            gender: r.participant.gender,
+          },
+        }
+      })
+      .filter((r): r is ExerciseProofWithOwner => r !== null)
+  }
 
   const listRecentPhotos = async (limit = 60, offset = 0): Promise<PhotoWithOwner[]> => {
     const { data, error } = await supabase
@@ -122,5 +166,5 @@ export const useGallery = () => {
     })
   }
 
-  return { listRecentPhotos, listAllProgress }
+  return { listRecentPhotos, listRecentExerciseProofs, listAllProgress }
 }
