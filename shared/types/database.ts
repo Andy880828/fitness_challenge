@@ -86,6 +86,24 @@ export interface Database {
         }
         Update: Partial<Database['public']['Tables']['photos']['Insert']>
       }
+      exercise_proofs: {
+        Row: {
+          id: string
+          participant_id: string
+          date: string
+          kind: 'photo' | 'note'
+          note: string | null
+          storage_path: string | null
+          public_url: string | null
+          size_bytes: number | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['exercise_proofs']['Row'], 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['exercise_proofs']['Insert']>
+      }
       admin_audit_log: {
         Row: {
           id: string

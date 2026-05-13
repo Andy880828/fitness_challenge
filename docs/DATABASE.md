@@ -564,3 +564,33 @@ CLI 路徑（`pnpm db:gen-types`）目前未啟用，見上方說明。
 | 日期 | 版本 | 變更 |
 |------|------|------|
 | 2026-04-28 | v0.1 | 初版 schema：5 張表 + RLS + Storage + 2 RPC |
+| 2026-05-13 | v0.2 | 新增 `exercise_proofs` 表（運動打卡證明，kind = 'photo' \| 'note'）+ RLS；migration `20260513000000_add_exercise_proofs.sql` |
+
+---
+
+## v0.2 變更詳情：`exercise_proofs`
+
+運動打卡證明（照片或文字）。一日可多筆。CHECK 約束確保 kind 與欄位 1:1 對應。
+
+```sql
+create table if not exists public.exercise_proofs (
+  id              uuid primary key default gen_random_uuid(),
+  participant_id  uuid not null references public.participants(id) on delete cascade,
+  date            date not null,
+  kind            text not null check (kind in ('photo', 'note')),
+  note            text     check (note is null or char_length(note) between 1 and 500),
+  storage_path    text,
+  public_url      text,
+  size_bytes      int      check (size_bytes is null or size_bytes > 0),
+  created_at      timestamptz not null default now(),
+  check (
+    (kind = 'photo' and storage_path is not null and public_url is not null and note is null)
+    or
+    (kind = 'note'  and note is not null and storage_path is null and public_url is null)
+  )
+);
+```
+
+RLS：公開讀 + 本人寫（policy 同 `checkins_self_write` 結構）。
+
+Storage：照片走既有 `food-photos` bucket，路徑慣例 `<user_id>/exercise/<date>/<uuid>.jpg`，沿用「第一段資料夾必須是 auth.uid()」的 storage RLS。
