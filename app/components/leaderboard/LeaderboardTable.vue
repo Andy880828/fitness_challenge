@@ -10,7 +10,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const supabase = useSupabaseClient<any>()
-const { calc } = useScore()
+const { calc, loadAvgSmm } = useScore()
 
 interface Row {
   participant: ParticipantWithStats
@@ -29,6 +29,8 @@ const computeRows = async () => {
     loading.value = false
     return
   }
+  // AVG_SMM 在 calc 內被讀取，必須先 ready，否則 musCoef 退回 1，全榜會偏低且不一致
+  await loadAvgSmm()
   const { data, error } = await supabase
     .from('measurements')
     .select('*')

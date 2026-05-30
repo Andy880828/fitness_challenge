@@ -13,6 +13,13 @@ export const SCORE_WEIGHTS = {
   process: 0.2,
 } as const
 
+export const SCORE_CONST = {
+  M: { F_REF: 28, FAT_CAP: 25, MUS_CAP: 8 },
+  F: { F_REF: 33, FAT_CAP: 25, MUS_CAP: 8 },
+} as const
+
+export const PROCESS_TOTAL_CHECKS = TOTAL_DAYS * 3
+
 export const PHOTO_COMPRESS = {
   maxWidth: 800,
   jpegQuality: 0.8,

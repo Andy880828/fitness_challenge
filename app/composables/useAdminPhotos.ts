@@ -2,6 +2,8 @@
  * Admin 照片管理 composable — 走 /api/admin/photos。
  */
 
+import type { BatchDeleteResult } from '#shared/types/admin'
+
 export interface AdminPhotoRow {
   id: string
   participant_id: string
@@ -16,11 +18,6 @@ export interface AdminPhotoRow {
 export interface PhotoFilter {
   participantId?: string
   date?: string
-}
-
-export interface BatchDeleteResult {
-  deleted: string[]
-  failed: { id: string; error: string }[]
 }
 
 export const useAdminPhotos = () => {

@@ -3,6 +3,8 @@
  * 結構與 useAdminPhotos 對稱，因為兩者管理面行為幾乎一致。
  */
 
+import type { BatchDeleteResult } from '#shared/types/admin'
+
 export interface AdminExerciseProofRow {
   id: string
   participant_id: string
@@ -20,11 +22,6 @@ export interface ExerciseProofFilter {
   participantId?: string
   date?: string
   kind?: 'photo' | 'note'
-}
-
-export interface BatchDeleteResult {
-  deleted: string[]
-  failed: { id: string; error: string }[]
 }
 
 export const useAdminExerciseProofs = () => {

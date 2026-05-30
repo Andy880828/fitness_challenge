@@ -25,6 +25,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '2.0',
+    date: '2026-05-30',
+    title: '計分公式大改版：難度係數加權',
+    items: [
+      { kind: 'feat', text: '計分公式改為「相對變化率 × 難度係數」：體脂越低、肌肉越多的人，每多 1% 變化值更多分，不同起點能公平地在同一個榜上比' },
+      { kind: 'feat', text: '依性別套用不同參考值（男 F_REF=28、女 F_REF=33），男女榜分數可橫向比較' },
+      { kind: 'feat', text: '減脂分、增肌分都改為加權後封頂歸一化到 0–100，綜合分回到 0–100 標準範圍' },
+      { kind: 'feat', text: '儀表板分數卡新顯示你的難度係數與加權細節（如「9.9% × 2.14 → 21.2/25」），看得到分數怎麼算出來' },
+      { kind: 'docs', text: '規則頁重寫，新增常數表、計算範例與白話說明' },
+    ],
+  },
+  {
     version: '1.4',
     date: '2026-05-14',
     title: '管理中心新增運動證明管理',

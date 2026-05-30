@@ -20,13 +20,14 @@ export const useProfileData = () => {
   const { list: listMeasures } = useMeasures()
   const { countAll } = useCheckins()
   const { listByParticipant } = usePhotos()
-  const { calc } = useScore()
+  const { calc, loadAvgSmm } = useScore()
 
   const load = async (participant: Participant): Promise<ProfileData> => {
     const [measurements, counts, photos] = await Promise.all([
       listMeasures(participant.id),
       countAll(participant.id),
       listByParticipant(participant.id),
+      loadAvgSmm(),
     ])
     const photoDays = Object.keys(photos).length
     const score = calc({

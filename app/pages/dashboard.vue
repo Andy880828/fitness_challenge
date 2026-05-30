@@ -73,6 +73,7 @@ const onSaveMeasure = async (
       :diet-days="dietDays"
       :photo-days="photoDays"
       :score="score"
+      :gender="participant.gender"
       :editable="true"
       @save-measure="onSaveMeasure"
     />

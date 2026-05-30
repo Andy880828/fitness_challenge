@@ -3,15 +3,22 @@
  */
 
 import { ref } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCheckins } from '~/composables/useCheckins'
 import { createMockSupabase } from '../helpers/supabase-mock'
 import { sampleCheckins, checkinRow } from '../../fixtures/checkins'
 
 describe('useCheckins', () => {
   beforeEach(() => {
-    
+    // 把 system time 鎖在 2026-05-11；測試案例用 '2026-05-10' 作 toggle 日期，
+    // 落在「補打卡 3 天上限」窗內，避免測試環境真實時間漂移導致防呆搶先回傳 error。
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-11T00:00:00Z'))
     vi.stubGlobal('useSupabaseUser', () => ref(null))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('listRange 將 rows 轉成 date-keyed map', async () => {

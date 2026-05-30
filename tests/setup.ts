@@ -62,6 +62,7 @@ import { usePhotos } from '~/composables/usePhotos'
 import { useExerciseProofs } from '~/composables/useExerciseProofs'
 import { useAdminExerciseProofs } from '~/composables/useAdminExerciseProofs'
 import { useScore } from '~/composables/useScore'
+import { useAvgSmm } from '~/composables/useAvgSmm'
 import { useAuth } from '~/composables/useAuth'
 import { useChangelog } from '~/composables/useChangelog'
 
@@ -113,6 +114,7 @@ vi.stubGlobal('usePhotos', usePhotos)
 vi.stubGlobal('useExerciseProofs', useExerciseProofs)
 vi.stubGlobal('useAdminExerciseProofs', useAdminExerciseProofs)
 vi.stubGlobal('useScore', useScore)
+vi.stubGlobal('useAvgSmm', useAvgSmm)
 vi.stubGlobal('useAuth', useAuth)
 vi.stubGlobal('useChangelog', useChangelog)
 vi.stubGlobal('readonly', <T>(v: T) => v)

@@ -468,6 +468,9 @@ Free tier 連續 7 天無流量 project 會 pause。`vercel.json` 已設 cron �
 | 即時更新 | Polling / 手動 refresh | Realtime WebSocket | 12 週活動規模不需要 |
 | Logger | pino + pino-roll | winston, console | 效能最佳、serverless 友善 |
 | 計分公式 | shared/utils/score.ts | DB function | 可隨時調整、不需 migration；client + server 共用 |
+| 計分公式 v2.0 (2026-05-30) | 相對變化率 × 難度係數 + 性別常數封頂歸一化 (0–100) | v1.2 純線性 1%=1 分無封頂 | 對齊 v2.0 新版計分規格：體脂低 / 肌肉多者每 1% 變化成本更高，加權補償後不同起點公平在同一榜比；綜合分回到 0–100 便於閱讀 |
+| AVG_SMM 取得策略 | `useAvgSmm` composable + Nuxt `useState` 動態計算 | 鎖進 `challenge_settings.avg_smm_male/female` 欄位 | 報名期動態調整，無 admin UI 也能用；之後若要鎖名單可平滑遷移成 settings 欄位 |
+| 過程分分母 (v2.0) | 實作仍用 `effectiveDays × 3` 即時，文案標註 PDF 對齊 `PROCESS_TOTAL_CHECKS = 252` | 硬寫 252 為分母 | 活動進行中若分母固定 252，第 4 週滿打卡只會顯示 33% 過程分，視覺挫折；活動結束時兩者天然等價 |
 | 元件 auto-import | `pathPrefix: false` 扁平命名 | 預設目錄 prefix（`AuthLoginForm`） | 小專案檔名已唯一；扁平名閱讀更直覺 |
 | auth layout | provide/inject 共用 participant | 各頁自抓 | 消除 dashboard / checkin 的重複載入邏輯與 error UI |
 | Profile 共用 | ProfileView + useProfileData | dashboard 與 profile/[id] 各自寫一份 | 兩頁原本 70% 重複；抽出後修一處兩頁同步 |

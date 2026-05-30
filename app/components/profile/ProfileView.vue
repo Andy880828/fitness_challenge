@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MeasurementsByWeek, WeekIndex } from '#shared/types/measure'
 import type { ScoreBreakdown } from '#shared/types/score'
+import type { Gender } from '#shared/types/participant'
 
 interface Props {
   measurements: MeasurementsByWeek
@@ -8,6 +9,7 @@ interface Props {
   dietDays: number
   photoDays: number
   score: ScoreBreakdown
+  gender?: Gender
   editable?: boolean
 }
 const props = withDefaults(defineProps<Props>(), { editable: false })
@@ -58,7 +60,7 @@ const weightSeries = computed(() =>
       </div>
       <div class="min-w-0">
         <h2 v-if="editable" class="display-font text-xl md:text-2xl mb-4">分數</h2>
-        <ScoreBreakdown :score="score" />
+        <ScoreBreakdown :score="score" :gender="gender" />
       </div>
     </div>
   </div>

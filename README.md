@@ -2,7 +2,7 @@
 
 12 週為期、男女分組、即時計分的減脂增肌活動平台。Nuxt 4 + Supabase + Vercel。
 
-**最新版本：v1.4**（2026-05-14）— 管理中心照片管理擴充：飲食 / 運動雙 tab，運動證明也可篩選、預覽、批量刪除並寫入稽核軌跡。完整紀錄於 `shared/data/changelog.ts`，使用者可在右下角懸浮鈕查看。
+**最新版本：v2.0**（2026-05-30）— 計分公式改版：引入難度係數加權（`fatCoef = F_REF / bf0`、`musCoef = sm0 / AVG_SMM`），加權後封頂歸一化到 0–100，依性別套用不同參考值。完整紀錄於 `shared/data/changelog.ts`，使用者可在右下角懸浮鈕查看。
 
 ## 技術棧
 
@@ -73,10 +73,18 @@ E2E_ALLOW_REGISTER=1
 - [`docs/DATABASE.md`](./docs/DATABASE.md) — Supabase schema、RLS、Storage 設定
 - [`shared/data/changelog.ts`](./shared/data/changelog.ts) — 版本更新紀錄（顯示在 UI 右下角懸浮鈕）
 
-## 計分公式
+## 計分公式（v2.0）
 
 ```
-總分 = 減脂 × 40% + 增肌 × 40% + 過程 × 20%
+fatCoef     = F_REF / bf0                          // 男 F_REF=28、女 F_REF=33
+musCoef     = sm0  / AVG_SMM                       // 同性別第 0 週骨骼肌量平均
+weightedFat = max(0, rawFatLoss) × fatCoef
+weightedMus = max(0, rawMusGain) × musCoef
+fatNorm     = min(100, weightedFat / 25 × 100)     // FAT_CAP = 25
+musNorm     = min(100, weightedMus / 8  × 100)     // MUS_CAP = 8
+procNorm    = min(100, checks / 252 × 100)         // 84 天 × 3 勾 = 252
+
+總分 = fatNorm × 40% + musNorm × 40% + procNorm × 20%   // 滿分 100
 ```
 
 詳見 `shared/utils/score.ts` 與 `/rules` 頁面。

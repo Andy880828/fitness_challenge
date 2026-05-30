@@ -59,6 +59,7 @@ onMounted(async () => {
         :diet-days="dietDays"
         :photo-days="photoDays"
         :score="score"
+        :gender="participant.gender"
         :editable="false"
       />
     </div>
